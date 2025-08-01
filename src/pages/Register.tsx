@@ -1,0 +1,119 @@
+import React, { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { Link, useNavigate } from "react-router-dom";
+import { auth, firestore } from "../firebase";
+
+export default function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [role, setRole] = useState("basic-user"); // default role selection
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+
+    if (password !== passwordConfirm) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create user auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Save role to Firestore
+      await setDoc(doc(firestore, "users", user.uid), {
+        email: user.email,
+        role,
+      });
+
+      navigate("/admin/dashboard"); // Redirect after registration
+    } catch (err: any) {
+      setError(err.message || "Failed to create account");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <form
+        className="bg-white p-6 rounded shadow-md w-full max-w-md"
+        onSubmit={handleRegister}
+      >
+        <h2 className="text-xl font-bold mb-4 text-center">Register</h2>
+
+        {error && <div className="text-red-600 mb-4 text-center">{error}</div>}
+
+        <label className="block mb-2 font-medium">Email</label>
+        <input
+          type="email"
+          value={email}
+          required
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full mb-4 p-2 border rounded"
+        />
+
+        <label className="block mb-2 font-medium">Password</label>
+        <input
+          type="password"
+          value={password}
+          required
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full mb-4 p-2 border rounded"
+          minLength={6}
+        />
+
+        <label className="block mb-2 font-medium">Confirm Password</label>
+        <input
+          type="password"
+          value={passwordConfirm}
+          required
+          onChange={(e) => setPasswordConfirm(e.target.value)}
+          className="w-full mb-4 p-2 border rounded"
+          minLength={6}
+        />
+
+        <label className="block mb-2 font-medium">Role</label>
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="w-full mb-6 p-2 border rounded"
+        >
+          <option value="main-admin">Main Admin</option>
+          <option value="amazon-semi-admin">Amazon Semi Admin</option>
+          <option value="local-semi-admin">Local Semi Admin</option>
+          <option value="software-semi-admin">Software Semi Admin</option>
+          <option value="basic-user">Basic User</option>
+        </select>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {loading ? "Registering..." : "Register"}
+        </button>
+
+        <p className="mt-4 text-center text-sm">
+          Already have an account?{" "}
+          <Link to="/login" className="text-indigo-600 hover:underline">
+            Login here
+          </Link>
+        </p>
+      </form>
+    </div>
+  );
+}

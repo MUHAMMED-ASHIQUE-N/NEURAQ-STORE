@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Unauthorized from "./pages/Unauthorized";
+import AmazonProducts from "./pages/AmazonProducts";
+import LocalProducts from "./pages/LocalProducts";
+import SoftwareProducts from "./pages/SoftwareProducts";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["main-admin"]}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/amazon-products"
+        element={
+          <ProtectedRoute allowedRoles={["main-admin", "amazon-semi-admin"]}>
+            <AmazonProducts />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/local-products"
+        element={
+          <ProtectedRoute allowedRoles={["main-admin", "local-semi-admin"]}>
+            <LocalProducts />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/software-products"
+        element={
+          <ProtectedRoute allowedRoles={["main-admin", "software-semi-admin"]}>
+            <SoftwareProducts />
+          </ProtectedRoute>
+        }
+      />
+      {/* Add other routes here */}
+      <Route path="*" element={<Unauthorized />} />
+    </Routes>
+  );
 }
-
-export default App
