@@ -1,25 +1,24 @@
-// src/components/ProtectedRoute.tsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { useUser } from "../contexts/UserContext";
 
 interface ProtectedRouteProps {
-  user: { email: string; role: string } | null;
   allowedRoles: string[];
   children: React.ReactNode;
 }
 
 export default function ProtectedRoute({
-  user,
   allowedRoles,
   children,
 }: ProtectedRouteProps) {
+  const { user, loading } = useUser();
   const location = useLocation();
 
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-  if (!allowedRoles.includes(user.role)) {
+  if (loading) return <div className="text-center mt-10">Loading...</div>;
+
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!allowedRoles.includes(user.role))
     return <Navigate to="/unauthorized" replace />;
-  }
+
   return <>{children}</>;
 }

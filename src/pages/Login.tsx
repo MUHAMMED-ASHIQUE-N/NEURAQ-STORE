@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { auth } from "../firebase";
+import { auth, firestore } from "../firebase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -11,20 +12,59 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // To redirect to intended page after login
-  const from = (location.state as any)?.from?.pathname || "/admin/dashboard";
-
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate(from, { replace: true });
+      // 1. Authenticate user with Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // 2. Fetch user role from Firestore
+      const userDocRef = doc(firestore, "users", user.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      if (!userSnap.exists()) {
+        setError("User profile not found.");
+        setLoading(false);
+        return;
+      }
+
+      const userData = userSnap.data();
+      const role = userData.role || "basic-user";
+
+      // 3. Determine redirect path based on role
+      let redirectPath = "/login"; // fallback
+
+      switch (role) {
+        case "main-admin":
+          redirectPath = "/admin/dashboard";
+          break;
+        case "amazon-semi-admin":
+          redirectPath = "/admin/amazon-products";
+          break;
+        case "local-semi-admin":
+          redirectPath = "/admin/local-products";
+          break;
+        case "software-semi-admin":
+          redirectPath = "/admin/software-products";
+          break;
+        default:
+          // Could redirect to a "No access" or "Unauthorized" page or show an error
+          redirectPath = "/unauthorized";
+          break;
+      }
+
+      // 4. Redirect user to role-based page
+      navigate(redirectPath, { replace: true });
     } catch (err: any) {
       setError(err.message || "Failed to login");
-    } finally {
       setLoading(false);
     }
   }
@@ -32,8 +72,8 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <form
-        className="bg-white p-6 rounded shadow-md w-full max-w-md"
         onSubmit={handleLogin}
+        className="bg-white p-6 rounded shadow-md w-full max-w-md"
       >
         <h2 className="text-xl font-bold mb-4 text-center">Login</h2>
 
@@ -46,6 +86,7 @@ export default function Login() {
           required
           onChange={(e) => setEmail(e.target.value)}
           className="w-full mb-4 p-2 border rounded"
+          autoComplete="username"
         />
 
         <label className="block mb-2 font-medium">Password</label>
@@ -55,6 +96,7 @@ export default function Login() {
           required
           onChange={(e) => setPassword(e.target.value)}
           className="w-full mb-6 p-2 border rounded"
+          autoComplete="current-password"
         />
 
         <button

@@ -8,7 +8,6 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [role, setRole] = useState("basic-user"); // default role selection
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -25,7 +24,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Create user auth
+      // 1. Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -33,13 +32,15 @@ export default function Register() {
       );
       const user = userCredential.user;
 
-      // Save role to Firestore
+      // 2. Save user data in Firestore with default role "basic-user"
       await setDoc(doc(firestore, "users", user.uid), {
         email: user.email,
-        role,
+        role: "basic-user", // default role assigned automatically
+        createdAt: new Date().toISOString(),
       });
 
-      navigate("/admin/dashboard"); // Redirect after registration
+      // 3. Redirect after successful registration
+      navigate("/login"); // or /admin/dashboard if you want auto-login
     } catch (err: any) {
       setError(err.message || "Failed to create account");
     } finally {
@@ -64,6 +65,7 @@ export default function Register() {
           required
           onChange={(e) => setEmail(e.target.value)}
           className="w-full mb-4 p-2 border rounded"
+          autoComplete="username"
         />
 
         <label className="block mb-2 font-medium">Password</label>
@@ -74,6 +76,7 @@ export default function Register() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full mb-4 p-2 border rounded"
           minLength={6}
+          autoComplete="new-password"
         />
 
         <label className="block mb-2 font-medium">Confirm Password</label>
@@ -82,22 +85,10 @@ export default function Register() {
           value={passwordConfirm}
           required
           onChange={(e) => setPasswordConfirm(e.target.value)}
-          className="w-full mb-4 p-2 border rounded"
-          minLength={6}
-        />
-
-        <label className="block mb-2 font-medium">Role</label>
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
           className="w-full mb-6 p-2 border rounded"
-        >
-          <option value="main-admin">Main Admin</option>
-          <option value="amazon-semi-admin">Amazon Semi Admin</option>
-          <option value="local-semi-admin">Local Semi Admin</option>
-          <option value="software-semi-admin">Software Semi Admin</option>
-          <option value="basic-user">Basic User</option>
-        </select>
+          minLength={6}
+          autoComplete="new-password"
+        />
 
         <button
           type="submit"

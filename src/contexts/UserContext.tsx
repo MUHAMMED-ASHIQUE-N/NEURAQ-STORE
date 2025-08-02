@@ -5,18 +5,14 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import {
-  onAuthStateChanged,
-  User as FirebaseUser,
-  getAuth,
-} from "firebase/auth";
+import { onAuthStateChanged, getAuth } from "firebase/auth";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import app from "../firebase";
 
 interface User {
   uid: string;
   email: string | null;
-  role: string; // e.g., 'main-admin', 'amazon-semi-admin', etc.
+  role: string;
 }
 
 interface UserContextValue {
@@ -35,11 +31,7 @@ export function useUser() {
   return useContext(UserContext);
 }
 
-interface UserProviderProps {
-  children: ReactNode;
-}
-
-export function UserProvider({ children }: UserProviderProps) {
+export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +46,6 @@ export function UserProvider({ children }: UserProviderProps) {
 
       if (firebaseUser) {
         try {
-          // Fetch user role from Firestore (users collection)
           const userDocRef = doc(firestore, "users", firebaseUser.uid);
           const userDocSnap = await getDoc(userDocRef);
 
@@ -63,17 +54,16 @@ export function UserProvider({ children }: UserProviderProps) {
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
-              role: userData.role || "basic-user", // fallback role
+              role: userData.role || "basic-user",
             });
           } else {
-            // No user data found
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
-              role: "basic-user", // fallback
+              role: "basic-user",
             });
           }
-        } catch (fetchError) {
+        } catch {
           setError("Failed to fetch user role");
           setUser(null);
         }
