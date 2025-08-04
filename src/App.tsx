@@ -9,6 +9,7 @@ import LocalProducts from "./pages/LocalProducts";
 import SoftwareProducts from "./pages/SoftwareProducts";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import MainAdminApprovals from "./components/MainAdminApprovals";
 
 export default function App() {
   return (
@@ -23,6 +24,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["main-admin"]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/approvals"
+          element={
+            <ProtectedRoute allowedRoles={["main-admin"]}>
+              <MainAdminApprovals />
             </ProtectedRoute>
           }
         />

@@ -90,11 +90,18 @@ export default function SoftwareProducts() {
     }
   }
 
-  function handleFieldChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  function handleInputChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    idx?: number
   ) {
     const { name, value } = e.target;
-    if (["quantity", "originalPrice", "discountPercent"].includes(name)) {
+    if (name === "images" && idx !== undefined) {
+      const imgs = [...imageInputs];
+      imgs[idx].value = value;
+      setImageInputs(imgs);
+    } else if (
+      ["quantity", "originalPrice", "discountPercent"].includes(name)
+    ) {
       setForm((f) => ({ ...f, [name]: Number(value) }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
@@ -240,181 +247,137 @@ export default function SoftwareProducts() {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Add Software Product
-      </h1>
+    <div className="max-w-5xl mx-auto p-4 bg-white rounded border shadow">
+      <h1 className="text-xl font-bold mb-4">Add Software Product</h1>
 
       {message && <div className="mb-4 text-green-600">{message}</div>}
 
       <form onSubmit={handleSubmit} noValidate>
-        <h2 className="text-xl font-semibold mb-4">
-          {editingId ? "Edit Product" : "Add Software Product"}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Title */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Title <span className="text-red-600">*</span>
-            </label>
+            <label className="block mb-1 font-semibold">Title</label>
             <input
-              name="title"
-              type="text"
-              value={form.title}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full border p-2 rounded ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
+              value={form.title}
+              name="title"
+              onChange={handleInputChange}
+              required
             />
             {errors.title && (
-              <p className="text-red-600 text-sm mt-1">{errors.title}</p>
+              <p className="text-red-600 text-sm">{errors.title}</p>
             )}
           </div>
-          {/* Name */}
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Name <span className="text-red-600">*</span>
-            </label>
+            <label className="block mb-1 font-semibold">Name</label>
             <input
-              name="name"
-              type="text"
-              value={form.name}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full border p-2 rounded ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
+              value={form.name}
+              name="name"
+              onChange={handleInputChange}
+              required
             />
             {errors.name && (
-              <p className="text-red-600 text-sm mt-1">{errors.name}</p>
+              <p className="text-red-600 text-sm">{errors.name}</p>
             )}
           </div>
-          {/* Quantity */}
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Quantity <span className="text-red-600">*</span>
-            </label>
+            <label className="block mb-1 font-semibold">Company Name</label>
             <input
-              name="quantity"
-              type="number"
-              min={0}
-              value={form.quantity}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
-                errors.quantity ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.quantity && (
-              <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
-            )}
-          </div>
-          {/* Company Name */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Company Name <span className="text-red-600">*</span>
-            </label>
-            <input
-              name="companyName"
-              type="text"
-              value={form.companyName}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full border p-2 rounded ${
                 errors.companyName ? "border-red-500" : "border-gray-300"
               }`}
+              value={form.companyName}
+              name="companyName"
+              onChange={handleInputChange}
+              required
             />
             {errors.companyName && (
-              <p className="text-red-600 text-sm mt-1">{errors.companyName}</p>
+              <p className="text-red-600 text-sm">{errors.companyName}</p>
             )}
           </div>
-          {/* Access Duration */}
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Access Duration <span className="text-red-600">*</span>
-            </label>
+            <label className="block mb-1 font-semibold">Access Duration</label>
             <input
-              name="accessDuration"
-              type="text"
-              value={form.accessDuration}
-              onChange={handleFieldChange}
-              placeholder="e.g. 1 year, lifetime, 30 days"
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full border p-2 rounded ${
                 errors.accessDuration ? "border-red-500" : "border-gray-300"
               }`}
+              value={form.accessDuration}
+              name="accessDuration"
+              onChange={handleInputChange}
+              required
             />
             {errors.accessDuration && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.accessDuration}
-              </p>
+              <p className="text-red-600 text-sm">{errors.accessDuration}</p>
             )}
           </div>
-          {/* Original Price */}
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Original Price ($) <span className="text-red-600">*</span>
-            </label>
+            <label className="block mb-1 font-semibold">Quantity</label>
             <input
-              name="originalPrice"
               type="number"
-              min={0}
-              value={form.originalPrice}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full border p-2 rounded ${
+                errors.quantity ? "border-red-500" : "border-gray-300"
+              }`}
+              value={form.quantity}
+              name="quantity"
+              onChange={handleInputChange}
+            />
+            {errors.quantity && (
+              <p className="text-red-600 text-sm">{errors.quantity}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block mb-1 font-semibold">Original Price</label>
+            <input
+              type="number"
+              className={`w-full border p-2 rounded ${
                 errors.originalPrice ? "border-red-500" : "border-gray-300"
               }`}
+              value={form.originalPrice}
+              name="originalPrice"
+              onChange={handleInputChange}
             />
             {errors.originalPrice && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.originalPrice}
-              </p>
+              <p className="text-red-600 text-sm">{errors.originalPrice}</p>
             )}
           </div>
-          {/* Discount Percent */}
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Discount % <span className="text-red-600">*</span>
-            </label>
+            <label className="block mb-1 font-semibold">Discount %</label>
             <input
-              name="discountPercent"
               type="number"
-              min={0}
-              max={100}
-              value={form.discountPercent}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full border p-2 rounded ${
                 errors.discountPercent ? "border-red-500" : "border-gray-300"
               }`}
+              value={form.discountPercent}
+              name="discountPercent"
+              onChange={handleInputChange}
             />
             {errors.discountPercent && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.discountPercent}
-              </p>
+              <p className="text-red-600 text-sm">{errors.discountPercent}</p>
             )}
           </div>
-          {/* Computed Final Price */}
-          <div className="flex flex-col justify-end">
-            <label className="block font-medium text-gray-700">
-              Final Price ($)
-            </label>
-            <p className="text-lg font-semibold mb-1">
-              {computeFinalPrice(
-                form.originalPrice,
-                form.discountPercent
-              ).toFixed(2)}
-            </p>
-          </div>
-          {/* Description */}
+
           <div className="md:col-span-2">
-            <label className="block mb-1 font-medium text-gray-700">
-              Description
-            </label>
+            <label className="block mb-1 font-semibold">Description</label>
             <textarea
-              name="description"
-              rows={3}
+              className="w-full border p-2 rounded"
               value={form.description}
-              onChange={handleFieldChange}
-              className="w-full border px-3 py-2 rounded border-gray-300"
+              name="description"
+              onChange={handleInputChange}
+              rows={4}
             />
           </div>
         </div>
+
         <div className="mt-4">
           <label className="block font-bold mb-2">
             Images (max {MAX_IMAGES})
@@ -446,7 +409,7 @@ export default function SoftwareProducts() {
                 <input
                   type="url"
                   placeholder="Image URL"
-                  className={`flex-grow p-2 border rounded ${
+                  className={`flex-grow rounded border p-2 ${
                     errors[`image_${idx}`]
                       ? "border-red-500"
                       : "border-gray-300"
@@ -481,7 +444,7 @@ export default function SoftwareProducts() {
                 <img
                   src={input.value}
                   alt="Preview"
-                  className="w-16 h-12 object-cover rounded border"
+                  className="w-20 h-16 border rounded object-cover"
                 />
               )}
 

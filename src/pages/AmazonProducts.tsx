@@ -1,4 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  onSnapshot,
+  Timestamp,
+  query,
+  where,
+} from "firebase/firestore";
+import { firestore } from "../firebase";
+import { useUser } from "../contexts/UserContext";
 
 type Product = {
   id: string;
@@ -9,29 +21,63 @@ type Product = {
   images: string[];
   originalPrice: number;
   discountPercent: number;
+  finalPrice: number;
   buyingLink: string;
   createdBy: string;
   modifiedBy: string;
   createdAt: string;
   updatedAt: string;
+  approved: boolean;
 };
 
 type ImageInputType = "url" | "upload";
 interface ImageInput {
   type: ImageInputType;
   value: string;
-  file?: File; // Used for preview, replace with Cloudflare URL after upload
+  file?: File;
 }
 
-const ADMIN_USERNAME = "admin"; // Swap with your logged-in user logic as needed
 const MAX_IMAGES = 5;
+
+// Cloudflare Upload Helper
+// async function uploadImageToCloudflare(file: File): Promise<string> {
+//   const CLOUDFLARE_ACCOUNT_ID = a26ad94e691df93fea801ec5e167209f;
+//   const CLOUDFLARE_API_TOKEN = cFCd3IYqHIJEInWJpK4cpLPdqr6aZPzgzVbl2_un;
+//   const formData = new FormData();
+//   formData.append("file", file);
+
+//   const res = await fetch(
+//     `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1`,
+//     {
+//       method: "POST",
+//       headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}` },
+//       body: formData,
+//     }
+//   );
+
+//   const data = await res.json();
+//   if (!res.ok || !data.success)
+//     throw new Error(data.errors?.[0]?.message || "Cloudflare upload failed");
+//   // Use default variant:
+//   return data.result.variants[0];
+// }
+async function uploadToCloudflare(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch("http://localhost:4000/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json();
+  return data.url; // or data.allVariants[0]
+}
 
 function computeFinalPrice(originalPrice: number, discountPercent: number) {
   return originalPrice * (1 - discountPercent / 100);
 }
-function generateId() {
-  return "_" + Math.random().toString(36).slice(2, 9);
-}
+
 function isValidUrl(url: string): boolean {
   try {
     new URL(url);
@@ -42,6 +88,8 @@ function isValidUrl(url: string): boolean {
 }
 
 export default function AmazonProducts() {
+  const { user } = useUser();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState({
     title: "",
@@ -57,30 +105,68 @@ export default function AmazonProducts() {
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  // --- Image input handlers ---
-  function handleImageInputTypeChange(idx: number, inputType: ImageInputType) {
+  useEffect(() => {
+    // Only load approved products
+    const unsub = onSnapshot(
+      query(
+        collection(firestore, "amazonProducts"),
+        where("approved", "==", true)
+      ),
+      (snapshot) => {
+        const prods: Product[] = [];
+        snapshot.forEach((doc) => {
+          prods.push({ id: doc.id, ...(doc.data() as Product) });
+        });
+        setProducts(prods);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  function handleInputChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    const { name, value } = e.target;
+    setForm((f) =>
+      ["quantity", "originalPrice", "discountPercent"].includes(name)
+        ? { ...f, [name]: Number(value) }
+        : { ...f, [name]: value }
+    );
+  }
+
+  function handleImageTypeChange(idx: number, type: ImageInputType) {
     setImageInputs((arr) =>
       arr.map((input, i) =>
-        i === idx ? { type: inputType, value: "", file: undefined } : input
+        i === idx ? { type, value: "", file: undefined } : input
       )
     );
   }
+
   function handleImageUrlChange(idx: number, value: string) {
     setImageInputs((arr) =>
       arr.map((input, i) => (i === idx ? { ...input, value } : input))
     );
   }
-  function handleUploadFile(idx: number, file: File) {
-    // Replace with Cloudflare upload: get result URL then set value.
-    // For demo, generate a preview and treat it as 'uploaded'
-    const url = URL.createObjectURL(file);
-    setImageInputs((arr) =>
-      arr.map((input, i) =>
-        i === idx ? { type: "upload", value: url, file } : input
-      )
-    );
+
+  async function handleUploadFile(idx: number, file: File) {
+    setLoading(true);
+    try {
+      const url = await uploadToCloudflare(file);
+      setImageInputs((arr) =>
+        arr.map((input, i) =>
+          i === idx ? { type: "upload", value: url } : input
+        )
+      );
+    } catch (err: any) {
+      alert("Cloudflare Upload Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   }
+
   function removeImageInput(idx: number) {
     setImageInputs((arr) => arr.filter((_, i) => i !== idx));
   }
@@ -90,23 +176,11 @@ export default function AmazonProducts() {
     }
   }
 
-  // --- Form handlers ---
-  function handleFieldChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value } = e.target;
-    if (["quantity", "originalPrice", "discountPercent"].includes(name)) {
-      setForm((f) => ({ ...f, [name]: Number(value) }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
-    }
-  }
-
   function validate() {
     const newErrors: Record<string, string> = {};
     if (!form.title.trim()) newErrors.title = "Title is required";
     if (!form.name.trim()) newErrors.name = "Name is required";
-    if (form.quantity < 0) newErrors.quantity = "Quantity can’t be negative";
+    if (form.quantity < 0) newErrors.quantity = "Quantity can't be negative";
     if (form.originalPrice < 0)
       newErrors.originalPrice = "Original price must be non-negative";
     if (form.discountPercent < 0 || form.discountPercent > 100)
@@ -138,42 +212,64 @@ export default function AmazonProducts() {
     setEditingId(null);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || !user?.email) return;
+    setLoading(true);
     const timestamp = new Date().toISOString();
     const images = imageInputs.map((i) => i.value).filter((v) => v.trim());
-    if (editingId) {
-      setProducts((prods) =>
-        prods.map((prod) =>
-          prod.id === editingId
-            ? {
-                ...prod,
-                ...form,
-                images,
-                modifiedBy: ADMIN_USERNAME,
-                updatedAt: timestamp,
-              }
-            : prod
-        )
-      );
-    } else {
-      setProducts((prods) => [
-        ...prods,
-        {
-          id: generateId(),
+
+    const finalPrice = computeFinalPrice(
+      form.originalPrice,
+      form.discountPercent
+    );
+
+    try {
+      if (editingId) {
+        // Update product -> set as pending approval
+        const ref = doc(firestore, "amazonProducts", editingId);
+        await updateDoc(ref, {
           ...form,
           images,
-          createdBy: ADMIN_USERNAME,
-          modifiedBy: ADMIN_USERNAME,
+          finalPrice,
+          modifiedBy: user.email,
+          updatedAt: timestamp,
+          approved: false,
+        });
+      } else {
+        // Add new product
+        await addDoc(collection(firestore, "amazonProducts"), {
+          ...form,
+          images,
+          finalPrice,
+          createdBy: user.email,
+          modifiedBy: user.email,
           createdAt: timestamp,
           updatedAt: timestamp,
-        },
-      ]);
+          approved: false,
+        });
+      }
+      resetForm();
+      setMessage("Product submitted for approval.");
+    } catch {
+      setMessage("Failed to save product.");
+    } finally {
+      setLoading(false);
     }
-    resetForm();
   }
 
+  // Rest of handlers (edit, delete) from previous code...
+  // --- Form handlers ---
+  function handleFieldChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    const { name, value } = e.target;
+    if (["quantity", "originalPrice", "discountPercent"].includes(name)) {
+      setForm((f) => ({ ...f, [name]: Number(value) }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
+  }
   function handleEdit(id: string) {
     const prod = products.find((p) => p.id === id);
     if (!prod) return;
@@ -202,11 +298,17 @@ export default function AmazonProducts() {
     }
   }
 
+  // RENDER
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">
         Amazon Products Management
       </h1>
+      {message && (
+        <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+          {message}
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className="max-w-4xl bg-white rounded-xl shadow p-6 mb-8"
@@ -216,17 +318,15 @@ export default function AmazonProducts() {
           {editingId ? "Edit Product" : "Add Amazon Product"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Title */}
+          {/* ... The same field inputs as your code ... */}
           <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Title <span className="text-red-600">*</span>
-            </label>
+            <label className="block font-medium mb-1">Title *</label>
             <input
               name="title"
               type="text"
               value={form.title}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              onChange={handleInputChange}
+              className={`w-full p-2 border rounded ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -234,6 +334,8 @@ export default function AmazonProducts() {
               <p className="text-red-600 text-sm mt-1">{errors.title}</p>
             )}
           </div>
+          {/* repeat for name, description, quantity, originalPrice, discountPercent, buyingLink */}
+          {/* ... */}
           {/* Name */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">
@@ -357,86 +459,97 @@ export default function AmazonProducts() {
               className="w-full border px-3 py-2 rounded border-gray-300"
             />
           </div>
-          {/* Images Input Array */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium text-gray-700">
-              Images (up to {MAX_IMAGES})
-            </label>
-            {imageInputs.map((input, idx) => (
-              <div key={idx} className="flex items-center gap-2 mb-2">
-                <select
-                  value={input.type}
-                  onChange={(e) =>
-                    handleImageInputTypeChange(
-                      idx,
-                      e.target.value as ImageInputType
-                    )
-                  }
-                  className="p-1 rounded border"
-                >
-                  <option value="url">Add Image by URL</option>
-                  <option value="upload">Upload Image</option>
-                </select>
-                {input.type === "url" ? (
-                  <input
-                    type="url"
-                    value={input.value}
-                    onChange={(e) => handleImageUrlChange(idx, e.target.value)}
-                    placeholder="Image URL"
-                    className={`flex-grow p-2 border rounded ${
-                      errors[`image_${idx}`]
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                  />
-                ) : (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleUploadFile(idx, file);
-                    }}
-                    className="flex-grow"
-                  />
-                )}
-                {/* Show preview for either type if URL present */}
-                {input.value && (
-                  <img
-                    src={input.value}
-                    alt={`Product ${idx + 1}`}
-                    className="w-16 h-12 object-cover rounded border"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeImageInput(idx)}
-                  className="text-red-600 hover:text-red-800 font-semibold"
-                >
-                  Remove
-                </button>
-                {errors[`image_${idx}`] && (
-                  <span className="text-red-600 text-sm">
-                    {errors[`image_${idx}`]}
-                  </span>
-                )}
-              </div>
-            ))}
-            {imageInputs.length < MAX_IMAGES && (
+          <div>
+            <label className="block font-medium mb-1">Final Price</label>
+            <p className="p-2 font-semibold">
+              {computeFinalPrice(
+                form.originalPrice,
+                form.discountPercent
+              ).toFixed(2)}
+            </p>
+          </div>
+        </div>
+        {/* IMAGE INPUTS */}
+        <div className="mt-5">
+          <label className="block mb-2 font-semibold text-gray-700">
+            Images (up to {MAX_IMAGES})
+          </label>
+          {imageInputs.map((input, idx) => (
+            <div key={idx} className="flex items-center gap-2 mb-3">
+              <select
+                value={input.type}
+                onChange={(e) =>
+                  handleImageTypeChange(idx, e.target.value as ImageInputType)
+                }
+                className="border rounded p-1"
+                disabled={loading}
+              >
+                <option value="url">Add Image by URL</option>
+                <option value="upload">Upload Image</option>
+              </select>
+              {input.type === "url" ? (
+                <input
+                  type="url"
+                  value={input.value}
+                  onChange={(e) => handleImageUrlChange(idx, e.target.value)}
+                  placeholder="Image URL"
+                  className={`flex-grow p-2 border rounded ${
+                    errors[`image_${idx}`]
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  disabled={loading}
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) await handleUploadFile(idx, file);
+                  }}
+                  className="flex-grow"
+                  disabled={loading}
+                />
+              )}
+              {input.value && (
+                <img
+                  src={input.value}
+                  alt={`Image Preview ${idx + 1}`}
+                  className="w-16 h-12 object-cover rounded border"
+                />
+              )}
               <button
                 type="button"
-                onClick={addImageInput}
-                className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                onClick={() => removeImageInput(idx)}
+                className="text-red-600 hover:text-red-800 font-semibold"
+                disabled={loading}
               >
-                Add Image
+                Remove
               </button>
-            )}
-          </div>
+              {errors[`image_${idx}`] && (
+                <span className="text-red-600 text-sm">
+                  {errors[`image_${idx}`]}
+                </span>
+              )}
+            </div>
+          ))}
+          {imageInputs.length < MAX_IMAGES && (
+            <button
+              type="button"
+              onClick={addImageInput}
+              className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              disabled={loading}
+            >
+              Add Image
+            </button>
+          )}
         </div>
         <div className="mt-6 flex gap-4">
           <button
             type="submit"
             className="px-5 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+            disabled={loading}
           >
             {editingId ? "Update Product" : "Add Product"}
           </button>
@@ -444,12 +557,48 @@ export default function AmazonProducts() {
             type="button"
             onClick={resetForm}
             className="px-5 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100"
+            disabled={loading}
           >
             Clear
           </button>
         </div>
       </form>
-
+      {/* Approved Product Table */}
+      <section className="max-w-6xl bg-white p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-semibold mb-4">Amazon Products</h2>
+        {products.length === 0 ? (
+          <p className="text-gray-500">No products added yet.</p>
+        ) : (
+          <div className="overflow-auto">
+            <table className="min-w-full text-left text-sm text-gray-700">
+              <thead className="bg-indigo-100">
+                <tr>
+                  <th className="px-4 py-2">Title</th>
+                  <th className="px-4 py-2">Name</th>
+                  <th className="px-4 py-2">Quantity</th>
+                  <th className="px-4 py-2">Final Price</th>
+                  <th className="px-4 py-2">Created By</th>
+                  {/* ... Add Actions column if you wish ... */}
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((prod) => (
+                  <tr
+                    key={prod.id}
+                    className="border-b last:border-none hover:bg-indigo-50"
+                  >
+                    <td className="px-4 py-2">{prod.title}</td>
+                    <td className="px-4 py-2">{prod.name}</td>
+                    <td className="px-4 py-2">{prod.quantity}</td>
+                    <td className="px-4 py-2">{prod.finalPrice.toFixed(2)}</td>
+                    <td className="px-4 py-2">{prod.createdBy}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
       {/* PRODUCTS TABLE */}
       <section className="max-w-6xl bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Amazon Products</h2>

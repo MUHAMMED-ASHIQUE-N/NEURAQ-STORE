@@ -1,34 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  onSnapshot,
+  query,
+  where,
+  Timestamp,
+} from "firebase/firestore";
+import { firestore } from "../firebase";
+import { useUser } from "../contexts/UserContext";
 
-type Product = {
-  id: string;
-  title: string;
-  name: string;
-  description: string;
-  quantity: number;
-  images: string[]; // URLs (Cloudflare or elsewhere)
-  originalPrice: number;
-  discountPercent: number;
-  companyName: string;
-  productCategory: string;
-  moreInfoLink: string;
-  createdBy: string;
-  modifiedBy: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type ImageInputType = "url" | "upload"; // upload is placeholder to later handle Cloudflare upload
-
-interface ImageInput {
-  type: ImageInputType;
-  value: string; // image URL or local file placeholder
-  file?: File; // For local upload, can store the file temporarily (optional for now)
-}
-
-const ADMIN_USERNAME = "admin"; // Replace with auth as needed
-const MAX_IMAGES = 3;
-
+const MAX_IMAGES = 5;
 const PRODUCT_CATEGORIES = [
   "Electronics",
   "Clothing",
@@ -39,18 +23,16 @@ const PRODUCT_CATEGORIES = [
   "Other",
 ];
 
-const generateId = () => "_" + Math.random().toString(36).slice(2, 9);
-
-/** Final price is computed from original price and discount % */
-function computeFinalPrice(originalPrice: number, discountPercent: number) {
-  return originalPrice * (1 - discountPercent / 100);
-}
+type ImageInput = {
+  type: "url" | "upload";
+  value: string;
+  file?: File; // Local file for preview
+};
 
 export default function LocalProducts() {
-  // Manage list of products in local state (replace with API or Firebase for real world)
-  const [products, setProducts] = useState<Product[]>([]);
+  const { user } = useUser();
 
-  // Form state
+  const [products, setProducts] = useState<any[]>([]);
   const [form, setForm] = useState({
     title: "",
     name: "",
@@ -58,23 +40,95 @@ export default function LocalProducts() {
     quantity: 0,
     originalPrice: 0,
     discountPercent: 0,
+    buyingLink: "",
     companyName: "",
     productCategory: PRODUCT_CATEGORIES[0],
     moreInfoLink: "",
   });
 
-  // For images: array of image inputs (up to 3)
   const [imageInputs, setImageInputs] = useState<ImageInput[]>([
     { type: "url", value: "" },
   ]);
-
-  // Editing state id
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  // Validation errors state
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  // Handle changes to text/number inputs and dropdowns
+  // Load approved products
+  useEffect(() => {
+    const q = query(
+      collection(firestore, "localProducts"),
+      where("approved", "==", true)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const prods: any[] = [];
+      snapshot.forEach((doc) => prods.push({ id: doc.id, ...doc.data() }));
+      setProducts(prods);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  function computeFinalPrice() {
+    return form.originalPrice * (1 - form.discountPercent / 100);
+  }
+
+  function isValidUrl(url: string) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function handleInputChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+    idx?: number
+  ) {
+    const { name, value } = e.target;
+    if (name === "images" && typeof idx === "number") {
+      const imgs = [...imageInputs];
+      imgs[idx].value = value;
+      setImageInputs(imgs);
+    } else if (
+      ["quantity", "originalPrice", "discountPercent"].includes(name)
+    ) {
+      setForm((f) => ({ ...f, [name]: Number(value) }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
+  }
+
+  function addImageInput() {
+    if (imageInputs.length < MAX_IMAGES) {
+      setImageInputs((imgs) => [...imgs, { type: "url", value: "" }]);
+    }
+  }
+
+  function removeImageInput(idx: number) {
+    setImageInputs((imgs) => imgs.filter((_, i) => i !== idx));
+  }
+
+  async function uploadImageToServer(file: File): Promise<string> {
+    // Upload image file to your backend API that uploads to Cloudflare Images
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("http://localhost:4000/api/upload", {
+      // Adjust your backend endpoint accordingly
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Image upload failed");
+    }
+    const data = await response.json();
+    return data.url; // Assuming backend returns { url: '...' }
+  }
+
   function handleChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -89,7 +143,108 @@ export default function LocalProducts() {
     }
   }
 
-  // Change image input type (dropdown) from 'url' to 'upload' or vice versa
+  function validate() {
+    const errs: Record<string, string> = {};
+    if (!form.title.trim()) errs.title = "Title is required";
+    if (!form.name.trim()) errs.name = "Name is required";
+    if (form.quantity < 0) errs.quantity = "Quantity cannot be negative";
+    if (form.originalPrice < 0)
+      errs.originalPrice = "Original price must be non-negative";
+    if (form.discountPercent < 0 || form.discountPercent > 100)
+      errs.discountPercent = "Discount % must be between 0 and 100";
+    if (form.buyingLink && !isValidUrl(form.buyingLink))
+      errs.buyingLink = "Invalid Buying Link URL";
+    if (form.moreInfoLink && !isValidUrl(form.moreInfoLink))
+      errs.moreInfoLink = "Invalid External Info URL";
+
+    imageInputs.forEach((img, i) => {
+      if (
+        img.type === "url" &&
+        img.value.trim() &&
+        !isValidUrl(img.value.trim())
+      ) {
+        errs[`image_${i}`] = "Invalid image URL";
+      }
+    });
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) {
+      alert("You must be logged in.");
+      return;
+    }
+    if (!validate()) return;
+
+    setLoading(true);
+    setMessage("");
+    try {
+      const filteredImages = imageInputs
+        .map((img) => img.value.trim())
+        .filter(Boolean);
+      const timestamp = Timestamp.now();
+      const finalPrice = computeFinalPrice();
+
+      if (editingId) {
+        const ref = doc(firestore, "localProducts", editingId);
+        await updateDoc(ref, {
+          ...form,
+          images: filteredImages,
+          finalPrice,
+          modifiedBy: user.email,
+          updatedAt: timestamp,
+          approved: false, // mark as pending approval on edit
+          rejected: false,
+        });
+      } else {
+        await addDoc(collection(firestore, "localProducts"), {
+          ...form,
+          images: filteredImages,
+          finalPrice,
+          createdBy: user.email,
+          modifiedBy: user.email,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          approved: false,
+          rejected: false,
+        });
+      }
+      resetForm();
+      setMessage("Product submitted for approval.");
+    } catch (error) {
+      alert("Error submitting product: " + (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetForm() {
+    setForm({
+      title: "",
+      name: "",
+      description: "",
+      quantity: 0,
+      originalPrice: 0,
+      discountPercent: 0,
+      buyingLink: "",
+      companyName: "",
+      productCategory: PRODUCT_CATEGORIES[0],
+      moreInfoLink: "",
+    });
+    setImageInputs([{ type: "url", value: "" }]);
+    setErrors({});
+    setEditingId(null);
+  }
+
+  type ImageInputType = "url" | "upload"; // upload is placeholder to later handle Cloudflare upload
+
+  interface ImageInput {
+    type: ImageInputType;
+    value: string; // image URL or local file placeholder
+    file?: File; // For local upload, can store the file temporarily (optional for now)
+  }
   function handleImageInputTypeChange(idx: number, newType: ImageInputType) {
     setImageInputs((inputs) =>
       inputs.map((input, i) =>
@@ -100,187 +255,11 @@ export default function LocalProducts() {
     );
   }
 
-  // Change image URL for given index
-  function handleImageUrlChange(idx: number, newValue: string) {
-    setImageInputs((inputs) =>
-      inputs.map((input, i) =>
-        i === idx ? { ...input, value: newValue } : input
-      )
-    );
-  }
-
-  // Placeholder for image upload handler - replace with Cloudflare upload API integration
-  function handleUploadFile(idx: number, file: File) {
-    // Currently just simulates a local object URL - replace this with actual Cloudflare upload and get URL
-    // For demonstration, create a blob URL (NOT suitable for production)
-    const url = URL.createObjectURL(file);
-    setImageInputs((inputs) =>
-      inputs.map((input, i) =>
-        i === idx ? { type: "upload", value: url, file } : input
-      )
-    );
-  }
-
-  // Remove image input slot at index
-  function removeImage(idx: number) {
-    setImageInputs((inputs) => inputs.filter((_, i) => i !== idx));
-  }
-
-  // Add a new image input slot with default type 'url' if less than max
-  function addImageInput() {
-    if (imageInputs.length < MAX_IMAGES) {
-      setImageInputs((inputs) => [...inputs, { type: "url", value: "" }]);
-    }
-  }
-
-  // Validate form before submit
-  function validate() {
-    const newErrors: Record<string, string> = {};
-
-    if (!form.title.trim()) newErrors.title = "Title is required";
-    if (!form.name.trim()) newErrors.name = "Name is required";
-    if (form.quantity < 0) newErrors.quantity = "Quantity can’t be negative";
-    if (form.originalPrice < 0)
-      newErrors.originalPrice = "Original price must be non-negative";
-    if (form.discountPercent < 0 || form.discountPercent > 100)
-      newErrors.discountPercent = "Discount % must be 0-100";
-    if (!form.companyName.trim())
-      newErrors.companyName = "Company name is required";
-    if (!PRODUCT_CATEGORIES.includes(form.productCategory))
-      newErrors.productCategory = "Select a valid product category";
-    if (form.moreInfoLink.trim() && !isValidUrl(form.moreInfoLink.trim()))
-      newErrors.moreInfoLink = "More About Product link must be a valid URL";
-
-    // Validate image URLs
-    imageInputs.forEach((input, idx) => {
-      if (input.type === "url" && input.value.trim() !== "") {
-        if (!isValidUrl(input.value.trim()))
-          newErrors[`image_${idx}`] = "Image URL is invalid";
-      }
-      // If type is upload, no validation needed here (assumed handled by upload)
-    });
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  }
-
-  // Utility to check if string is valid URL
-  function isValidUrl(url: string): boolean {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  // Reset form including images, errors, editing state
-  function resetForm() {
-    setForm({
-      title: "",
-      name: "",
-      description: "",
-      quantity: 0,
-      originalPrice: 0,
-      discountPercent: 0,
-      companyName: "",
-      productCategory: PRODUCT_CATEGORIES[0],
-      moreInfoLink: "",
-    });
-    setImageInputs([{ type: "url", value: "" }]);
-    setErrors({});
-    setEditingId(null);
-  }
-
-  // When submitting the form for Add or Update
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validate()) return;
-
-    const timestamp = new Date().toISOString();
-
-    // Compose image URLs array from image inputs (only URLs)
-    const images = imageInputs
-      .map((input) => input.value.trim())
-      .filter((url) => url !== "");
-
-    if (editingId) {
-      // Update existing product
-      setProducts((prev) =>
-        prev.map((prod) =>
-          prod.id === editingId
-            ? {
-                ...prod,
-                ...form,
-                images,
-                modifiedBy: ADMIN_USERNAME,
-                updatedAt: timestamp,
-              }
-            : prod
-        )
-      );
-    } else {
-      // Add new product
-      const newProduct: Product = {
-        id: generateId(),
-        ...form,
-        images,
-        createdBy: ADMIN_USERNAME,
-        modifiedBy: ADMIN_USERNAME,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-      setProducts((prev) => [...prev, newProduct]);
-    }
-
-    resetForm();
-  }
-
-  // Click Edit - load product into form
-  function handleEdit(productId: string) {
-    const prod = products.find((p) => p.id === productId);
-    if (!prod) return;
-    setEditingId(productId);
-    setForm({
-      title: prod.title,
-      name: prod.name,
-      description: prod.description,
-      quantity: prod.quantity,
-      originalPrice: prod.originalPrice,
-      discountPercent: prod.discountPercent,
-      companyName: prod.companyName,
-      productCategory: prod.productCategory,
-      moreInfoLink: prod.moreInfoLink,
-    });
-    setImageInputs(
-      prod.images.length > 0
-        ? prod.images.map((url) => ({ type: "url", value: url }))
-        : [{ type: "url", value: "" }]
-    );
-    setErrors({});
-  }
-
-  // Delete product by id with confirmation
-  function handleDelete(productId: string) {
-    if (window.confirm("Confirm deletion of this product?")) {
-      setProducts((prev) => prev.filter((p) => p.id !== productId));
-      if (editingId === productId) resetForm();
-    }
-  }
-
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Local Products Management
-      </h1>
-
-      {/* Product Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-4xl bg-white rounded-lg shadow p-6 mb-8"
-        noValidate
-      >
+    <div className="max-w-4xl mx-auto p-4 bg-white shadow rounded">
+      <h1 className="text-xl font-semibold mb-4">Add Local Product</h1>
+      {message && <div className="mb-4 text-green-700">{message}</div>}
+      <form onSubmit={handleSubmit} noValidate>
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add New Product"}
         </h2>
@@ -518,100 +497,99 @@ export default function LocalProducts() {
               className="w-full p-2 border rounded border-gray-300"
             />
           </div>
-
-          {/* Images Inputs with dropdowns */}
-          <div className="md:col-span-2">
-            <label className="block mb-2 font-medium text-gray-700">
-              Images (up to {MAX_IMAGES})
-            </label>
-            {imageInputs.map((input, idx) => (
-              <div key={idx} className="flex items-center gap-2 mb-3">
-                <select
-                  value={input.type}
-                  onChange={(e) =>
-                    handleImageInputTypeChange(
-                      idx,
-                      e.target.value as ImageInputType
-                    )
-                  }
-                  className="border rounded p-1"
-                >
-                  <option value="url">Add Image by URL</option>
-                  <option value="upload">Upload Image</option>
-                </select>
-                {input.type === "url" ? (
-                  <input
-                    type="url"
-                    value={input.value}
-                    onChange={(e) => handleImageUrlChange(idx, e.target.value)}
-                    placeholder="Image URL"
-                    className={`flex-grow p-2 border rounded ${
-                      errors[`image_${idx}`]
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                  />
-                ) : (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleUploadFile(idx, file);
-                      }
-                    }}
-                    className="flex-grow"
-                  />
-                )}
-                {/* Preview Image if valid URL */}
-                {input.value && (
-                  <img
-                    src={input.value}
-                    alt={`Preview ${idx + 1}`}
-                    className="w-16 h-12 object-cover rounded border"
-                  />
-                )}
-                {/* Remove button */}
+        </div>
+        {/* Images Section */}
+        <div className="mt-4">
+          <label className="block font-semibold mb-2">
+            Product Images (up to {MAX_IMAGES})
+          </label>
+          {imageInputs.map((input, idx) => (
+            <div key={idx} className="flex items-center space-x-2 mb-3">
+              <select
+                value={input.type}
+                onChange={(e) =>
+                  handleImageInputTypeChange(
+                    idx,
+                    e.target.value as "url" | "upload"
+                  )
+                }
+                disabled={loading}
+                className="border rounded px-2 py-1"
+              >
+                <option value="url">Add via URL</option>
+                <option value="upload">Upload File</option>
+              </select>
+              {input.type === "url" ? (
+                <input
+                  type="url"
+                  placeholder="Image URL"
+                  value={input.value}
+                  onChange={(e) => handleInputChange(e, idx)}
+                  name="images"
+                  className="flex-grow border rounded px-3 py-2"
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={loading}
+                  onChange={async (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      await handleFileChange(e, idx);
+                    }
+                  }}
+                  className="flex-grow"
+                />
+              )}
+              {input.value && (
+                <img
+                  src={input.value}
+                  alt="img preview"
+                  className="w-16 h-12 object-cover rounded border"
+                />
+              )}
+              {imageInputs.length > 1 && (
                 <button
-                  type="button"
-                  onClick={() => removeImage(idx)}
+                  onClick={() => removeImageInput(idx)}
+                  disabled={loading}
                   className="text-red-600 hover:text-red-800 font-semibold"
                 >
                   Remove
                 </button>
-              </div>
-            ))}
-            {imageInputs.length < MAX_IMAGES && (
-              <button
-                type="button"
-                onClick={addImageInput}
-                className="px-3 py-1 bg-indigo-600 rounded text-white hover:bg-indigo-700"
-              >
-                Add Image
-              </button>
-            )}
-          </div>
+              )}
+            </div>
+          ))}
+          {imageInputs.length < MAX_IMAGES && (
+            <button
+              onClick={addImageInput}
+              disabled={loading}
+              className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+            >
+              Add Image
+            </button>
+          )}
         </div>
 
-        {/* Submit and Clear buttons */}
-        <div className="mt-6 flex gap-4">
+        <div className="mt-6 space-x-4">
           <button
             type="submit"
-            className="px-5 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 font-semibold"
+            disabled={loading}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded"
           >
             {editingId ? "Update Product" : "Add Product"}
           </button>
           <button
             type="button"
             onClick={resetForm}
-            className="px-5 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100"
+            disabled={loading}
+            className="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-100"
           >
             Clear
           </button>
         </div>
       </form>
 
+      {/* Add your product list table/code below, if desired */}
       {/* Product list table */}
       <section className="max-w-6xl bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Local Products</h2>
