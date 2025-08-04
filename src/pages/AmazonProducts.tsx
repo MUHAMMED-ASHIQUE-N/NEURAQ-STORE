@@ -235,6 +235,7 @@ export default function AmazonProducts() {
           modifiedBy: user.email,
           updatedAt: timestamp,
           approved: false,
+          rejected: false,
         });
       } else {
         // Add new product
@@ -247,6 +248,7 @@ export default function AmazonProducts() {
           createdAt: timestamp,
           updatedAt: timestamp,
           approved: false,
+          rejected: false,
         });
       }
       resetForm();
@@ -592,61 +594,6 @@ export default function AmazonProducts() {
                     <td className="px-4 py-2">{prod.quantity}</td>
                     <td className="px-4 py-2">{prod.finalPrice.toFixed(2)}</td>
                     <td className="px-4 py-2">{prod.createdBy}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-      {/* PRODUCTS TABLE */}
-      <section className="max-w-6xl bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold mb-4">Amazon Products</h2>
-        {products.length === 0 ? (
-          <p className="text-gray-500">No products added yet.</p>
-        ) : (
-          <div className="overflow-auto">
-            <table className="min-w-full text-left text-sm text-gray-700">
-              <thead className="bg-indigo-100">
-                <tr>
-                  <th className="px-4 py-2">Title</th>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Quantity</th>
-                  <th className="px-4 py-2">Final Price</th>
-                  <th className="px-4 py-2">Created By</th>
-                  <th className="px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((prod) => (
-                  <tr
-                    key={prod.id}
-                    className="border-b last:border-none hover:bg-indigo-50"
-                  >
-                    <td className="px-4 py-2">{prod.title}</td>
-                    <td className="px-4 py-2">{prod.name}</td>
-                    <td className="px-4 py-2">{prod.quantity}</td>
-                    <td className="px-4 py-2">
-                      {computeFinalPrice(
-                        prod.originalPrice,
-                        prod.discountPercent
-                      ).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-2">{prod.createdBy}</td>
-                    <td className="px-4 py-2 flex gap-3">
-                      <button
-                        onClick={() => handleEdit(prod.id)}
-                        className="text-indigo-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prod.id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>

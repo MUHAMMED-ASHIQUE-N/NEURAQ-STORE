@@ -43,6 +43,10 @@ export default function MainAdminApprovals() {
       const unsub = onSnapshot(
         q,
         (snapshot) => {
+          console.log(
+            `Snapshot for ${collectionName}:`,
+            snapshot.docs.map((doc) => doc.data())
+          );
           // Remove previous docs from this collection in merged state
           mergedProducts = mergedProducts.filter(
             (p) => p.collectionName !== collectionName
