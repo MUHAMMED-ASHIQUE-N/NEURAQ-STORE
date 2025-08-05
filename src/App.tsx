@@ -4,12 +4,12 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
-import AmazonProducts from "./pages/AmazonProducts";
-import LocalProducts from "./pages/LocalProducts";
-import SoftwareProducts from "./pages/SoftwareProducts";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import MainAdminApprovals from "./components/MainAdminApprovals";
+import AmazonAdminDashboard from "./pages/AmazonAdminDashboard";
+import LocalAdminDashboard from "./pages/LocalAdminDashboard";
+import SoftwareAdminDashboard from "./pages/SoftwareAdminDashboard";
 
 export default function App() {
   return (
@@ -39,7 +39,7 @@ export default function App() {
           path="/admin/amazon-products"
           element={
             <ProtectedRoute allowedRoles={["main-admin", "amazon-semi-admin"]}>
-              <AmazonProducts />
+              <AmazonAdminDashboard />
             </ProtectedRoute>
           }
         />
@@ -47,7 +47,7 @@ export default function App() {
           path="/admin/local-products"
           element={
             <ProtectedRoute allowedRoles={["main-admin", "local-semi-admin"]}>
-              <LocalProducts />
+              <LocalAdminDashboard />
             </ProtectedRoute>
           }
         />
@@ -57,7 +57,7 @@ export default function App() {
             <ProtectedRoute
               allowedRoles={["main-admin", "software-semi-admin"]}
             >
-              <SoftwareProducts />
+              <SoftwareAdminDashboard />
             </ProtectedRoute>
           }
         />

@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { useUser } from "../contexts/UserContext";
+import AmazonProductCard from "../components/AmazonProductCard";
 
 type Product = {
   id: string;
@@ -300,6 +301,25 @@ export default function AmazonProducts() {
     }
   }
 
+  function populateFormForEdit(prod: Product) {
+    setEditingId(prod.id);
+    setForm({
+      title: prod.title,
+      name: prod.name,
+      description: prod.description,
+      quantity: prod.quantity,
+      originalPrice: prod.originalPrice,
+      discountPercent: prod.discountPercent,
+      buyingLink: prod.buyingLink,
+    });
+    setImageInputs(
+      prod.images && prod.images.length > 0
+        ? prod.images.map((url) => ({ type: "url", value: url }))
+        : [{ type: "url", value: "" }]
+    );
+    setErrors({});
+  }
+
   // RENDER
   return (
     <div className="min-h-screen p-6 bg-gray-50">
@@ -566,41 +586,16 @@ export default function AmazonProducts() {
         </div>
       </form>
       {/* Approved Product Table */}
-      <section className="max-w-6xl bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold mb-4">Amazon Products</h2>
-        {products.length === 0 ? (
-          <p className="text-gray-500">No products added yet.</p>
-        ) : (
-          <div className="overflow-auto">
-            <table className="min-w-full text-left text-sm text-gray-700">
-              <thead className="bg-indigo-100">
-                <tr>
-                  <th className="px-4 py-2">Title</th>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Quantity</th>
-                  <th className="px-4 py-2">Final Price</th>
-                  <th className="px-4 py-2">Created By</th>
-                  {/* ... Add Actions column if you wish ... */}
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((prod) => (
-                  <tr
-                    key={prod.id}
-                    className="border-b last:border-none hover:bg-indigo-50"
-                  >
-                    <td className="px-4 py-2">{prod.title}</td>
-                    <td className="px-4 py-2">{prod.name}</td>
-                    <td className="px-4 py-2">{prod.quantity}</td>
-                    <td className="px-4 py-2">{prod.finalPrice.toFixed(2)}</td>
-                    <td className="px-4 py-2">{prod.createdBy}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((prod) => (
+          <AmazonProductCard
+            key={prod.id}
+            product={prod}
+            onEdit={populateFormForEdit}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
     </div>
   );
 }

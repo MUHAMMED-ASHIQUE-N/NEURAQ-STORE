@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { useUser } from "../contexts/UserContext";
+import SoftwareProductCard from "../components/SoftwareProductCard";
 
 type Product = {
   id: string;
@@ -183,35 +184,25 @@ export default function SoftwareProducts() {
     setLoading(true);
     setMessage("");
     try {
-      const filteredImages = imageInputs
-        .map((img) => img.value.trim())
-        .filter(Boolean);
+      const images = imageInputs.map((imgObj) => imgObj.value).filter(Boolean);
       const timestamp = Timestamp.now();
       const finalPrice = computeFinalPrice();
+      const payload = {
+        ...form, // title, name, etc.
+        images, // <--------- array of image URLs
+        finalPrice: computeFinalPrice(form.originalPrice, form.discountPercent),
+        createdBy: user.email,
+        modifiedBy: user.email,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        approved: false,
+        rejected: false,
+      };
 
       if (editingId) {
-        const ref = doc(firestore, "softwareProducts", editingId);
-        await updateDoc(ref, {
-          ...form,
-          images: filteredImages,
-          finalPrice,
-          modifiedBy: user.email,
-          updatedAt: timestamp,
-          approved: false,
-          rejected: false,
-        });
+        await updateDoc(doc(firestore, "softwareProducts", editingId), payload);
       } else {
-        await addDoc(collection(firestore, "softwareProducts"), {
-          ...form,
-          images: filteredImages,
-          finalPrice,
-          createdBy: user.email,
-          modifiedBy: user.email,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          approved: false,
-          rejected: false,
-        });
+        await addDoc(collection(firestore, "softwareProducts"), payload);
       }
       resetForm();
       setMessage("Product submitted for approval.");
@@ -237,6 +228,33 @@ export default function SoftwareProducts() {
     setErrors({});
     setEditingId(null);
     setMessage("");
+  }
+
+  function handleDelete(id: string) {
+    if (window.confirm("Delete product?")) {
+      setProducts((prods) => prods.filter((p) => p.id !== id));
+      if (editingId === id) resetForm();
+    }
+  }
+
+  function handleEdit(product) {
+    setEditingId(product.id);
+    setForm({
+      title: product.title || "",
+      name: product.name || "",
+      description: product.description || "",
+      quantity: product.quantity || 0,
+      originalPrice: product.originalPrice || 0,
+      discountPercent: product.discountPercent || 0,
+      companyName: product.companyName || "",
+      accessDuration: product.accessDuration || "",
+    });
+    setImageInputs(
+      product.images && product.images.length > 0
+        ? product.images.map((url) => ({ type: "url", value: url }))
+        : [{ type: "url", value: "" }]
+    );
+    setErrors({});
   }
 
   return (
@@ -530,42 +548,15 @@ export default function SoftwareProducts() {
       </form>
 
       {/* Your products table goes here */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">
-          Approved Software Products
-        </h2>
-        {products.length === 0 ? (
-          <p>No software products approved yet.</p>
-        ) : (
-          <table className="min-w-full table-auto border border-gray-300 text-left text-sm">
-            <thead className="bg-indigo-100">
-              <tr>
-                <th className="px-4 py-2 border">Title</th>
-                <th className="px-4 py-2 border">Name</th>
-                <th className="px-4 py-2 border">Company</th>
-                <th className="px-4 py-2 border">Access Duration</th>
-                <th className="px-4 py-2 border">Quantity</th>
-                <th className="px-4 py-2 border">Final Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((prod) => (
-                <tr key={prod.id} className="hover:bg-indigo-50 border-b">
-                  <td className="px-4 py-2 border">{prod.title}</td>
-                  <td className="px-4 py-2 border">{prod.name}</td>
-                  <td className="px-4 py-2 border">{prod.companyName}</td>
-                  <td className="px-4 py-2 border">{prod.accessDuration}</td>
-                  <td className="px-4 py-2 border">{prod.quantity}</td>
-                  <td className="px-4 py-2 border">
-                    $
-                    {prod.finalPrice?.toFixed(2) ??
-                      computeFinalPrice().toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((prod) => (
+          <SoftwareProductCard
+            product={prod}
+            key={prod.id}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
       </div>
     </div>
   );

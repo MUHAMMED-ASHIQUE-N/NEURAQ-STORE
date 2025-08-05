@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { useUser } from "../contexts/UserContext";
+import LocalProductCard from "../components/LocalProductCard";
 
 const MAX_IMAGES = 5;
 const PRODUCT_CATEGORIES = [
@@ -181,35 +182,25 @@ export default function LocalProducts() {
     setLoading(true);
     setMessage("");
     try {
-      const filteredImages = imageInputs
-        .map((img) => img.value.trim())
-        .filter(Boolean);
+      const images = imageInputs.map((imgObj) => imgObj.value).filter(Boolean);
       const timestamp = Timestamp.now();
       const finalPrice = computeFinalPrice();
+      const payload = {
+        ...form, // title, name, etc.
+        images, // <--------- array of image URLs
+        finalPrice: computeFinalPrice(form.originalPrice, form.discountPercent),
+        createdBy: user.email,
+        modifiedBy: user.email,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        approved: false,
+        rejected: false,
+      };
 
       if (editingId) {
-        const ref = doc(firestore, "localProducts", editingId);
-        await updateDoc(ref, {
-          ...form,
-          images: filteredImages,
-          finalPrice,
-          modifiedBy: user.email,
-          updatedAt: timestamp,
-          approved: false, // mark as pending approval on edit
-          rejected: false,
-        });
+        await updateDoc(doc(firestore, "localProducts", editingId), payload);
       } else {
-        await addDoc(collection(firestore, "localProducts"), {
-          ...form,
-          images: filteredImages,
-          finalPrice,
-          createdBy: user.email,
-          modifiedBy: user.email,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          approved: false,
-          rejected: false,
-        });
+        await addDoc(collection(firestore, "localProducts"), payload);
       }
       resetForm();
       setMessage("Product submitted for approval.");
@@ -253,6 +244,33 @@ export default function LocalProducts() {
           : input
       )
     );
+  }
+  function handleDelete(id: string) {
+    if (window.confirm("Delete product?")) {
+      setProducts((prods) => prods.filter((p) => p.id !== id));
+      if (editingId === id) resetForm();
+    }
+  }
+  function handleEdit(product) {
+    setEditingId(product.id);
+    setForm({
+      title: product.title || "",
+      name: product.name || "",
+      description: product.description || "",
+      quantity: product.quantity || 0,
+      originalPrice: product.originalPrice || 0,
+      discountPercent: product.discountPercent || 0,
+      buyingLink: product.buyingLink || "",
+      companyName: product.companyName || "",
+      productCategory: product.productCategory || "",
+      moreInfoLink: product.moreInfoLink || "",
+    });
+    setImageInputs(
+      product.images && product.images.length > 0
+        ? product.images.map((url) => ({ type: "url", value: url }))
+        : [{ type: "url", value: "" }]
+    );
+    setErrors({});
   }
 
   return (
@@ -591,62 +609,16 @@ export default function LocalProducts() {
 
       {/* Add your product list table/code below, if desired */}
       {/* Product list table */}
-      <section className="max-w-6xl bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold mb-4">Local Products</h2>
-        {products.length === 0 ? (
-          <p className="text-gray-500">No products added yet.</p>
-        ) : (
-          <div className="overflow-auto">
-            <table className="min-w-full text-left text-sm text-gray-700">
-              <thead className="bg-indigo-100">
-                <tr>
-                  <th className="px-4 py-2">Title</th>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Company</th>
-                  <th className="px-4 py-2">Category</th>
-                  <th className="px-4 py-2">Quantity</th>
-                  <th className="px-4 py-2">Final Price</th>
-                  <th className="px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((prod) => (
-                  <tr
-                    key={prod.id}
-                    className="border-b last:border-none hover:bg-indigo-50"
-                  >
-                    <td className="px-4 py-2">{prod.title}</td>
-                    <td className="px-4 py-2">{prod.name}</td>
-                    <td className="px-4 py-2">{prod.companyName}</td>
-                    <td className="px-4 py-2">{prod.productCategory}</td>
-                    <td className="px-4 py-2">{prod.quantity}</td>
-                    <td className="px-4 py-2">
-                      {computeFinalPrice(
-                        prod.originalPrice,
-                        prod.discountPercent
-                      ).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-2 flex gap-3">
-                      <button
-                        onClick={() => handleEdit(prod.id)}
-                        className="text-indigo-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prod.id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((prod) => (
+          <LocalProductCard
+            product={prod}
+            key={prod.id}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
     </div>
   );
 }
