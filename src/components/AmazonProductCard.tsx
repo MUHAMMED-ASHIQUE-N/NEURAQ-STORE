@@ -1,93 +1,157 @@
-import React from "react";
+import React, { useState } from "react";
+import { PenSquare, Trash2, Eye, EyeOff } from "lucide-react";
 
-function formatPrice(val: any) {
+function formatPrice(val: unknown) {
   if (typeof val !== "number" || isNaN(val)) return "N/A";
-  return val.toFixed(2);
+  return "$" + val.toFixed(2);
 }
 
-export default function AmazonProductCard({ product, onEdit, onDelete }) {
-  return (
-    <div className="max-w-sm rounded-xl overflow-hidden shadow-lg p-4 hover:scale-105 transition-shadow duration-300 bg-white border hover:border-indigo-400 flex flex-col">
-      {/* Main Image (first image if available) */}
-      {product.images && product.images[0] && (
-        <img
-          src={product.images[0]}
-          alt={product.title}
-          className="w-full h-48 object-cover rounded mb-3"
-        />
-      )}
+export default function AmazonProductCard({
+  product,
+  onEdit,
+  onDelete,
+}: {
+  product: any;
+  onEdit: (product: any) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
 
-      <div className="flex-1 px-2 py-2">
-        <div className="font-bold text-xl mb-2">{product.title}</div>
-        <p className="text-gray-700 text-base mb-2">
-          {product.description ? product.description : <em>No description</em>}
-        </p>
-        <div className="space-y-1 text-sm">
-          <p>
-            <strong>Name:</strong> {product.name}
-          </p>
-          <p>
-            <strong>Quantity:</strong> {product.quantity}
-          </p>
-          <p>
-            <strong>Original Price:</strong> $
-            {formatPrice(product.originalPrice)}
-          </p>
-          <p>
-            <strong>Discount %:</strong> {product.discountPercent ?? "N/A"}%
-          </p>
-          <p>
-            <strong>Final Price:</strong> ${formatPrice(product.finalPrice)}
-          </p>
-        </div>
-        <div className="mt-2">
-          <strong>Buying Link: </strong>
-          {product.buyingLink ? (
-            <a
-              href={product.buyingLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 underline break-all"
-            >
-              {product.buyingLink}
-            </a>
+  return (
+    <div
+      className={`
+        w-full sm:w-72 h-72 bg-white rounded-xl border shadow transition-all duration-300
+        hover:shadow-xl hover:scale-105 hover:-translate-y-1
+        flex flex-col justify-between overflow-hidden relative
+      `}
+      style={{ aspectRatio: "1 / 1", minWidth: "16rem", minHeight: "16rem" }}
+    >
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
+        {/* Image */}
+        <div className="w-28 h-28 flex-shrink-0 flex items-center justify-center mb-2">
+          {product.images && product.images[0] ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="w-full h-full object-cover rounded-md border"
+            />
           ) : (
-            <span>N/A</span>
+            <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
+              No Image
+            </div>
           )}
         </div>
-        {/* Thumbnail preview */}
-        {product.buyingLink && (
-          <div className="flex items-center mt-2">
-            <img
-              src={`https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(
-                product.buyingLink
-              )}`}
-              alt="Thumbnail"
-              className="w-10 h-10 rounded mr-2 border"
-            />
-            <span className="text-xs text-gray-400">Link Thumbnail</span>
-          </div>
-        )}
-        <div className="text-xs text-gray-600 mt-3">
-          <div>Created by: {product.createdBy || "N/A"}</div>
-          <div>Modified by: {product.modifiedBy || "N/A"}</div>
+        {/* Product Name */}
+        <div className="text-lg font-bold text-center truncate w-full">
+          {product.name}
+        </div>
+        {/* Price */}
+        <div className="mt-1 text-xl text-indigo-700 font-semibold">
+          {formatPrice(product.finalPrice)}
         </div>
       </div>
 
-      <div className="px-2 pt-4 pb-2 flex space-x-4 mt-2">
+      {/* Action Buttons with lucide-react icons */}
+      <div className="flex items-center justify-center gap-3 mb-2">
         <button
-          className="rounded-lg bg-blue-600 text-white px-4 py-2 font-semibold hover:bg-blue-700 transition"
+          className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-1 rounded-md font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
           onClick={() => onEdit(product)}
         >
-          Edit
+          <PenSquare size={18} /> Edit
         </button>
         <button
-          className="rounded-lg bg-red-600 text-white px-4 py-2 font-semibold hover:bg-red-700 transition"
+          className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-md font-semibold shadow hover:from-red-600 hover:to-pink-600 transition"
           onClick={() => onDelete(product.id)}
         >
-          Delete
+          <Trash2 size={18} /> Delete
+        </button>
+        <button
+          className="flex items-center gap-1 bg-gradient-to-r from-gray-500 to-gray-700 text-white px-3 py-1 rounded-md font-semibold shadow hover:from-gray-700 hover:to-gray-900 transition"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? <EyeOff size={18} /> : <Eye size={18} />}
+          {expanded ? "Hide" : "View"}
         </button>
       </div>
+
+      {/* Expanded Details Overlay */}
+      {expanded && (
+        <div className="absolute top-0 left-0 w-full h-full bg-white/95 px-4 py-4 flex flex-col rounded-xl overflow-auto z-10 border">
+          <div className="absolute top-2 right-2">
+            <button
+              className="bg-gray-200 rounded-full text-gray-600 px-2 py-1 font-bold shadow"
+              onClick={() => setExpanded(false)}
+            >
+              ×
+            </button>
+          </div>
+          <div className="space-y-1 text-sm pt-4">
+            <div>
+              <span className="font-semibold">Image:</span>
+              {product.images && product.images[0] ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="w-24 h-24 object-cover rounded border my-1"
+                />
+              ) : (
+                <span className="text-gray-400"> No Image</span>
+              )}
+            </div>
+            <div>
+              <span className="font-semibold">Title:</span> {product.title}
+            </div>
+            <div>
+              <span className="font-semibold">Name:</span> {product.name}
+            </div>
+            <div>
+              <span className="font-semibold">Description:</span>{" "}
+              {product.description || (
+                <em className="text-gray-400">No description</em>
+              )}
+            </div>
+            <div>
+              <span className="font-semibold">Quantity:</span>{" "}
+              {product.quantity}
+            </div>
+            <div>
+              <span className="font-semibold">Original Price:</span>{" "}
+              {formatPrice(product.originalPrice)}
+            </div>
+            <div>
+              <span className="font-semibold">Discount %:</span>{" "}
+              {product.discountPercent ?? "N/A"}%
+            </div>
+            <div>
+              <span className="font-semibold">Final Price:</span>{" "}
+              {formatPrice(product.finalPrice)}
+            </div>
+            <div>
+              <span className="font-semibold">Buying Link:</span>{" "}
+              {product.buyingLink ? (
+                <a
+                  href={product.buyingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline break-all"
+                >
+                  {product.buyingLink}
+                </a>
+              ) : (
+                <span className="text-gray-400">N/A</span>
+              )}
+            </div>
+            <div>
+              <span className="font-semibold">Created by:</span>{" "}
+              {product.createdBy || "N/A"}
+            </div>
+            <div>
+              <span className="font-semibold">Modified by:</span>{" "}
+              {product.modifiedBy || "N/A"}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

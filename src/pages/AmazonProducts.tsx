@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Plus, CheckSquare, Eraser, Trash2 } from "lucide-react";
 import {
   collection,
   addDoc,
@@ -544,11 +545,13 @@ export default function AmazonProducts() {
               <button
                 type="button"
                 onClick={() => removeImageInput(idx)}
-                className="text-red-600 hover:text-red-800 font-semibold"
                 disabled={loading}
+                className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold"
               >
+                <Trash2 size={16} />
                 Remove
               </button>
+
               {errors[`image_${idx}`] && (
                 <span className="text-red-600 text-sm">
                   {errors[`image_${idx}`]}
@@ -560,27 +563,31 @@ export default function AmazonProducts() {
             <button
               type="button"
               onClick={addImageInput}
-              className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-              disabled={loading}
+              disabled={imageInputs.length >= MAX_IMAGES || loading}
+              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             >
+              <Plus size={18} />
               Add Image
             </button>
           )}
         </div>
         <div className="mt-6 flex gap-4">
           <button
+            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-6 py-2 font-bold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             type="submit"
-            className="px-5 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
             disabled={loading}
           >
+            <CheckSquare size={18} />
             {editingId ? "Update Product" : "Add Product"}
           </button>
+
           <button
             type="button"
             onClick={resetForm}
-            className="px-5 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100"
             disabled={loading}
+            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-gray-400 to-gray-700 text-white rounded px-6 py-2 font-bold shadow hover:from-gray-600 hover:to-gray-900 transition"
           >
+            <Eraser size={18} />
             Clear
           </button>
         </div>

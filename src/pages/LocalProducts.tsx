@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Plus, CheckSquare, Eraser, Trash2 } from "lucide-react";
 import {
   collection,
   addDoc,
@@ -274,12 +275,22 @@ export default function LocalProducts() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-white shadow rounded">
-      <h1 className="text-xl font-semibold mb-4">Add Local Product</h1>
-      {message && <div className="mb-4 text-green-700">{message}</div>}
-      <form onSubmit={handleSubmit} noValidate>
+    <div className="min-h-screen p-6 bg-gray-50">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+        Local Products Management
+      </h1>
+      {message && (
+        <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+          {message}
+        </div>
+      )}
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-4xl bg-white rounded-xl shadow p-6 mb-8"
+        noValidate
+      >
         <h2 className="text-xl font-semibold mb-4">
-          {editingId ? "Edit Product" : "Add New Product"}
+          {editingId ? "Edit Product" : "Add Local Product"}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -566,12 +577,14 @@ export default function LocalProducts() {
                   className="w-16 h-12 object-cover rounded border"
                 />
               )}
-              {imageInputs.length > 1 && (
+              {imageInputs.length > 0 && (
                 <button
+                  type="button"
                   onClick={() => removeImageInput(idx)}
                   disabled={loading}
-                  className="text-red-600 hover:text-red-800 font-semibold"
+                  className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold"
                 >
+                  <Trash2 size={16} />
                   Remove
                 </button>
               )}
@@ -579,29 +592,35 @@ export default function LocalProducts() {
           ))}
           {imageInputs.length < MAX_IMAGES && (
             <button
+              type="button"
               onClick={addImageInput}
-              disabled={loading}
-              className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+              disabled={imageInputs.length >= MAX_IMAGES || loading}
+              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             >
+              <Plus size={18} />
               Add Image
             </button>
           )}
         </div>
 
-        <div className="mt-6 space-x-4">
+        <div className="flex flex-row gap-4 mt-6">
+          {/* Add/Update Product Button */}
           <button
+            className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-6 py-2 font-bold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             type="submit"
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded"
           >
+            <CheckSquare size={18} />
             {editingId ? "Update Product" : "Add Product"}
           </button>
+          {/* Clear Button */}
           <button
             type="button"
             onClick={resetForm}
             disabled={loading}
-            className="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-100"
+            className="flex items-center gap-1 bg-gradient-to-r from-gray-400 to-gray-700 text-white rounded px-6 py-2 font-bold shadow hover:from-gray-600 hover:to-gray-900 transition"
           >
+            <Eraser size={18} />
             Clear
           </button>
         </div>
@@ -612,8 +631,8 @@ export default function LocalProducts() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((prod) => (
           <LocalProductCard
-            product={prod}
             key={prod.id}
+            product={prod}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

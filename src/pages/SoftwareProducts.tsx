@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Plus, CheckSquare, Eraser, Trash2 } from "lucide-react";
 import {
   collection,
   addDoc,
@@ -260,12 +261,16 @@ export default function SoftwareProducts() {
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Add Software Product
+        Software Products Management
       </h1>
 
       {message && <div className="mb-4 text-green-600">{message}</div>}
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-4xl bg-white rounded-xl shadow p-6 mb-8"
+        noValidate
+      >
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add Software Product"}
         </h2>
@@ -504,12 +509,12 @@ export default function SoftwareProducts() {
               )}
 
               <button
+                type="button"
+                onClick={() => removeImageInput(idx)}
                 disabled={loading}
-                className="text-red-600 font-semibold"
-                onClick={() =>
-                  setImageInputs((imgs) => imgs.filter((_, i) => i !== idx))
-                }
+                className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold"
               >
+                <Trash2 size={16} />
                 Remove
               </button>
             </div>
@@ -517,12 +522,12 @@ export default function SoftwareProducts() {
 
           {imageInputs.length < MAX_IMAGES && (
             <button
-              disabled={loading}
-              onClick={() =>
-                setImageInputs((imgs) => [...imgs, { type: "url", value: "" }])
-              }
-              className="mt-2 bg-indigo-600 text-white px-4 py-2 rounded"
+              type="button"
+              onClick={addImageInput}
+              disabled={imageInputs.length >= MAX_IMAGES || loading}
+              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             >
+              <Plus size={18} />
               Add Image
             </button>
           )}
@@ -530,18 +535,21 @@ export default function SoftwareProducts() {
 
         <div className="mt-6 flex space-x-4">
           <button
+            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-6 py-2 font-bold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             type="submit"
             disabled={loading}
-            className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:opacity-60"
           >
-            {editingId ? "Update Product" : "Submit Product"}
+            <CheckSquare size={18} />
+            {editingId ? "Update Product" : "Add Product"}
           </button>
+
           <button
             type="button"
             onClick={resetForm}
             disabled={loading}
-            className="border px-6 py-2 rounded hover:bg-gray-100"
+            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-gray-400 to-gray-700 text-white rounded px-6 py-2 font-bold shadow hover:from-gray-600 hover:to-gray-900 transition"
           >
+            <Eraser size={18} />
             Clear
           </button>
         </div>
@@ -551,8 +559,8 @@ export default function SoftwareProducts() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((prod) => (
           <SoftwareProductCard
-            product={prod}
             key={prod.id}
+            product={prod}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

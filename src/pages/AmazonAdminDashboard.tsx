@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import AmazonSidebar from "../components/AmazonSidebar";
 import AmazonProducts from "./AmazonProducts";
 
 /**
@@ -11,7 +11,7 @@ export default function AmazonAdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar active={active} onSelect={() => setActive(true)} />
+      <AmazonSidebar active={active} onSelect={() => setActive(true)} />
       <main className="flex-1 p-6 overflow-auto">
         {active && <AmazonProducts />}
       </main>
