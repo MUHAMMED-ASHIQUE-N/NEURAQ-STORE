@@ -8,33 +8,71 @@ import {
   onSnapshot,
   query,
   where,
-  Timestamp,
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { useUser } from "../contexts/UserContext";
 import LocalProductCard from "../components/LocalProductCard";
 
-const MAX_IMAGES = 5;
-const PRODUCT_CATEGORIES = [
-  "Electronics",
-  "Clothing",
-  "Food & Beverages",
-  "Furniture",
-  "Books",
-  "Accessories",
-  "Other",
-];
-
-type ImageInput = {
-  type: "url" | "upload";
-  value: string;
-  file?: File; // Local file for preview
+type Product = {
+  id: string;
+  title: string;
+  name: string;
+  description: string;
+  quantity: number;
+  images: string[];
+  originalPrice: number;
+  discountPercent: number;
+  finalPrice: number;
+  buyingLink: string;
+  createdBy: string;
+  modifiedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  approved: boolean;
 };
+
+type ImageInputType = "url" | "upload";
+
+interface ImageInput {
+  type: ImageInputType;
+  value: string;
+  file?: File;
+}
+
+const MAX_IMAGES = 5;
+
+async function uploadToCloudflare(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch("http://localhost:4000/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Upload failed");
+
+  const data = await res.json();
+  return data.url;
+}
+
+function computeFinalPrice(originalPrice: number, discountPercent: number) {
+  return originalPrice * (1 - discountPercent / 100);
+}
+
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function LocalProducts() {
   const { user } = useUser();
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState({
     title: "",
     name: "",
@@ -43,11 +81,7 @@ export default function LocalProducts() {
     originalPrice: 0,
     discountPercent: 0,
     buyingLink: "",
-    companyName: "",
-    productCategory: PRODUCT_CATEGORIES[0],
-    moreInfoLink: "",
   });
-
   const [imageInputs, setImageInputs] = useState<ImageInput[]>([
     { type: "url", value: "" },
   ]);
@@ -56,160 +90,98 @@ export default function LocalProducts() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Load approved products
   useEffect(() => {
-    const q = query(
-      collection(firestore, "localProducts"),
-      where("approved", "==", true)
+    // Load only approved local products
+    const unsub = onSnapshot(
+      query(
+        collection(firestore, "localProducts"),
+        where("approved", "==", true)
+      ),
+      (snapshot) => {
+        const prods: Product[] = [];
+        snapshot.forEach((doc) => {
+          prods.push({ id: doc.id, ...(doc.data() as Product) });
+        });
+        setProducts(prods);
+      }
     );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const prods: any[] = [];
-      snapshot.forEach((doc) => prods.push({ id: doc.id, ...doc.data() }));
-      setProducts(prods);
-    });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
-  function computeFinalPrice() {
-    return form.originalPrice * (1 - form.discountPercent / 100);
-  }
-
-  function isValidUrl(url: string) {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  }
+  //
+  // Handlers and helpers below
+  //
 
   function handleInputChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-    idx?: number
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value } = e.target;
-    if (name === "images" && typeof idx === "number") {
-      const imgs = [...imageInputs];
-      imgs[idx].value = value;
-      setImageInputs(imgs);
-    } else if (
+    setForm((f) =>
       ["quantity", "originalPrice", "discountPercent"].includes(name)
-    ) {
-      setForm((f) => ({ ...f, [name]: Number(value) }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
-    }
+        ? { ...f, [name]: Number(value) }
+        : { ...f, [name]: value }
+    );
   }
 
-  function addImageInput() {
-    if (imageInputs.length < MAX_IMAGES) {
-      setImageInputs((imgs) => [...imgs, { type: "url", value: "" }]);
+  function handleImageTypeChange(idx: number, type: ImageInputType) {
+    setImageInputs((arr) =>
+      arr.map((input, i) => (i === idx ? { type, value: "" } : input))
+    );
+  }
+
+  function handleImageUrlChange(idx: number, value: string) {
+    setImageInputs((arr) =>
+      arr.map((input, i) => (i === idx ? { ...input, value } : input))
+    );
+  }
+
+  async function handleUploadFile(idx: number, file: File) {
+    setLoading(true);
+    try {
+      const url = await uploadToCloudflare(file);
+      setImageInputs((arr) =>
+        arr.map((input, i) =>
+          i === idx ? { type: "upload", value: url } : input
+        )
+      );
+    } catch (err: any) {
+      alert("Cloudflare Upload Error: " + err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
   function removeImageInput(idx: number) {
-    setImageInputs((imgs) => imgs.filter((_, i) => i !== idx));
+    setImageInputs((arr) => arr.filter((_, i) => i !== idx));
   }
 
-  async function uploadImageToServer(file: File): Promise<string> {
-    // Upload image file to your backend API that uploads to Cloudflare Images
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const response = await fetch("http://localhost:4000/api/upload", {
-      // Adjust your backend endpoint accordingly
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Image upload failed");
-    }
-    const data = await response.json();
-    return data.url; // Assuming backend returns { url: '...' }
-  }
-
-  function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) {
-    const { name, value } = e.target;
-    // Convert numeric fields properly
-    if (["quantity", "originalPrice", "discountPercent"].includes(name)) {
-      setForm((f) => ({ ...f, [name]: Number(value) }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
+  function addImageInput() {
+    if (imageInputs.length < MAX_IMAGES) {
+      setImageInputs((arr) => [...arr, { type: "url", value: "" }]);
     }
   }
 
   function validate() {
-    const errs: Record<string, string> = {};
-    if (!form.title.trim()) errs.title = "Title is required";
-    if (!form.name.trim()) errs.name = "Name is required";
-    if (form.quantity < 0) errs.quantity = "Quantity cannot be negative";
+    const newErrors: Record<string, string> = {};
+    if (!form.title.trim()) newErrors.title = "Title is required";
+    if (!form.name.trim()) newErrors.name = "Name is required";
+    if (form.quantity < 0) newErrors.quantity = "Quantity can't be negative";
     if (form.originalPrice < 0)
-      errs.originalPrice = "Original price must be non-negative";
+      newErrors.originalPrice = "Original price must be non-negative";
     if (form.discountPercent < 0 || form.discountPercent > 100)
-      errs.discountPercent = "Discount % must be between 0 and 100";
+      newErrors.discountPercent = "Discount % must be 0-100";
     if (form.buyingLink && !isValidUrl(form.buyingLink))
-      errs.buyingLink = "Invalid Buying Link URL";
-    if (form.moreInfoLink && !isValidUrl(form.moreInfoLink))
-      errs.moreInfoLink = "Invalid External Info URL";
+      newErrors.buyingLink = "Buying link must be a valid URL";
 
-    imageInputs.forEach((img, i) => {
-      if (
-        img.type === "url" &&
-        img.value.trim() &&
-        !isValidUrl(img.value.trim())
-      ) {
-        errs[`image_${i}`] = "Invalid image URL";
+    imageInputs.forEach((input, idx) => {
+      if (input.type === "url" && input.value.trim()) {
+        if (!isValidUrl(input.value.trim()))
+          newErrors[`image_${idx}`] = "Image URL invalid";
       }
     });
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user) {
-      alert("You must be logged in.");
-      return;
-    }
-    if (!validate()) return;
-
-    setLoading(true);
-    setMessage("");
-    try {
-      const images = imageInputs.map((imgObj) => imgObj.value).filter(Boolean);
-      const timestamp = Timestamp.now();
-      const finalPrice = computeFinalPrice();
-      const payload = {
-        ...form, // title, name, etc.
-        images, // <--------- array of image URLs
-        finalPrice: computeFinalPrice(form.originalPrice, form.discountPercent),
-        createdBy: user.email,
-        modifiedBy: user.email,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        approved: false,
-        rejected: false,
-      };
-
-      if (editingId) {
-        await updateDoc(doc(firestore, "localProducts", editingId), payload);
-      } else {
-        await addDoc(collection(firestore, "localProducts"), payload);
-      }
-      resetForm();
-      setMessage("Product submitted for approval.");
-    } catch (error) {
-      alert("Error submitting product: " + (error as Error).message);
-    } finally {
-      setLoading(false);
-    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
 
   function resetForm() {
@@ -221,221 +193,195 @@ export default function LocalProducts() {
       originalPrice: 0,
       discountPercent: 0,
       buyingLink: "",
-      companyName: "",
-      productCategory: PRODUCT_CATEGORIES[0],
-      moreInfoLink: "",
     });
     setImageInputs([{ type: "url", value: "" }]);
     setErrors({});
     setEditingId(null);
   }
 
-  type ImageInputType = "url" | "upload"; // upload is placeholder to later handle Cloudflare upload
-
-  interface ImageInput {
-    type: ImageInputType;
-    value: string; // image URL or local file placeholder
-    file?: File; // For local upload, can store the file temporarily (optional for now)
-  }
-  function handleImageInputTypeChange(idx: number, newType: ImageInputType) {
-    setImageInputs((inputs) =>
-      inputs.map((input, i) =>
-        i === idx
-          ? { type: newType, value: "" } // clear previous value/file on type change
-          : input
-      )
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validate() || !user?.email) return;
+    setLoading(true);
+    const timestamp = new Date().toISOString();
+    const images = imageInputs.map((i) => i.value).filter((v) => v.trim());
+    const finalPrice = computeFinalPrice(
+      form.originalPrice,
+      form.discountPercent
     );
-  }
-  function handleDelete(id: string) {
-    if (window.confirm("Delete product?")) {
-      setProducts((prods) => prods.filter((p) => p.id !== id));
-      if (editingId === id) resetForm();
+
+    try {
+      if (editingId) {
+        // Update product, mark pending approval
+        const ref = doc(firestore, "localProducts", editingId);
+        await updateDoc(ref, {
+          ...form,
+          images,
+          finalPrice,
+          modifiedBy: user.email,
+          updatedAt: timestamp,
+          approved: false, // mark as pending approval
+          rejected: false,
+        });
+      } else {
+        // Add new product
+        await addDoc(collection(firestore, "localProducts"), {
+          ...form,
+          images,
+          finalPrice,
+          createdBy: user.email,
+          modifiedBy: user.email,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          approved: false,
+          rejected: false,
+        });
+      }
+      resetForm();
+      setMessage("Product submitted for approval.");
+    } catch {
+      setMessage("Failed to save product.");
+    } finally {
+      setLoading(false);
     }
   }
-  function handleEdit(product) {
-    setEditingId(product.id);
+
+  function handleEdit(id: string) {
+    const prod = products.find((p) => p.id === id);
+    if (!prod) return;
+    setEditingId(prod.id);
     setForm({
-      title: product.title || "",
-      name: product.name || "",
-      description: product.description || "",
-      quantity: product.quantity || 0,
-      originalPrice: product.originalPrice || 0,
-      discountPercent: product.discountPercent || 0,
-      buyingLink: product.buyingLink || "",
-      companyName: product.companyName || "",
-      productCategory: product.productCategory || "",
-      moreInfoLink: product.moreInfoLink || "",
+      title: prod.title,
+      name: prod.name,
+      description: prod.description,
+      quantity: prod.quantity,
+      originalPrice: prod.originalPrice,
+      discountPercent: prod.discountPercent,
+      buyingLink: prod.buyingLink,
     });
     setImageInputs(
-      product.images && product.images.length > 0
-        ? product.images.map((url) => ({ type: "url", value: url }))
+      prod.images.length > 0
+        ? prod.images.map((url) => ({ type: "url", value: url }))
         : [{ type: "url", value: "" }]
     );
     setErrors({});
   }
 
+  function handleDelete(id: string) {
+    if (window.confirm("Delete product?")) {
+      setProducts((prods) => prods.filter((p) => p.id !== id));
+      if (editingId === id) resetForm();
+      // Deletion in Firestore should be handled here too if desired
+    }
+  }
+
+  // --- Responsive JSX return ---
+
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <h1 className="text-2xl md:text-3xl font-semibold mb-6">
         Local Products Management
       </h1>
+
       {message && (
-        <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
           {message}
         </div>
       )}
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-4xl bg-white rounded-xl shadow p-6 mb-8"
-        noValidate
-      >
-        <h2 className="text-xl font-semibold mb-4">
+
+      <form onSubmit={handleSubmit} className="mb-8">
+        <h2 className="text-xl md:text-2xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add Local Product"}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Title */}
-          <div>
+        {/* Title and Name */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
             <label
               htmlFor="title"
-              className="block mb-1 font-medium text-gray-700"
+              className="block text-sm md:text-base font-medium mb-1"
             >
-              Title <span className="text-red-600">*</span>
+              Title *
             </label>
             <input
-              id="title"
               name="title"
-              type="text"
               value={form.title}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
+              onChange={handleInputChange}
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.title && (
               <p className="text-red-600 text-sm mt-1">{errors.title}</p>
             )}
           </div>
 
-          {/* Name */}
-          <div>
+          <div className="flex-1">
             <label
               htmlFor="name"
-              className="block mb-1 font-medium text-gray-700"
+              className="block text-sm md:text-base font-medium mb-1"
             >
-              Name <span className="text-red-600">*</span>
+              Name *
             </label>
             <input
-              id="name"
               name="name"
-              type="text"
               value={form.name}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
+              onChange={handleInputChange}
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.name && (
               <p className="text-red-600 text-sm mt-1">{errors.name}</p>
             )}
           </div>
+        </div>
 
-          {/* Quantity */}
-          <div>
+        {/* Quantity, Original Price, Discount Percent */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
             <label
               htmlFor="quantity"
-              className="block mb-1 font-medium text-gray-700"
+              className="block text-sm md:text-base font-medium mb-1"
             >
-              Quantity <span className="text-red-600">*</span>
+              Quantity *
             </label>
             <input
-              id="quantity"
               name="quantity"
               type="number"
               min={0}
               value={form.quantity}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
+              onChange={handleInputChange}
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.quantity ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.quantity && (
               <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
             )}
           </div>
 
-          {/* Company Name */}
-          <div>
-            <label
-              htmlFor="companyName"
-              className="block mb-1 font-medium text-gray-700"
-            >
-              Company Name <span className="text-red-600">*</span>
-            </label>
-            <input
-              id="companyName"
-              name="companyName"
-              type="text"
-              value={form.companyName}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
-                errors.companyName ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.companyName && (
-              <p className="text-red-600 text-sm mt-1">{errors.companyName}</p>
-            )}
-          </div>
-
-          {/* Product Category */}
-          <div>
-            <label
-              htmlFor="productCategory"
-              className="block mb-1 font-medium text-gray-700"
-            >
-              Product Category <span className="text-red-600">*</span>
-            </label>
-            <select
-              id="productCategory"
-              name="productCategory"
-              value={form.productCategory}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
-                errors.productCategory ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              {PRODUCT_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            {errors.productCategory && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.productCategory}
-              </p>
-            )}
-          </div>
-
-          {/* Original Price */}
-          <div>
+          <div className="flex-1 mb-4 md:mb-0">
             <label
               htmlFor="originalPrice"
-              className="block mb-1 font-medium text-gray-700"
+              className="block text-sm md:text-base font-medium mb-1"
             >
-              Original Price ($) <span className="text-red-600">*</span>
+              Original Price ($) *
             </label>
             <input
-              id="originalPrice"
               name="originalPrice"
               type="number"
               min={0}
               step="0.01"
               value={form.originalPrice}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
+              onChange={handleInputChange}
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.originalPrice ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.originalPrice && (
               <p className="text-red-600 text-sm mt-1">
@@ -444,26 +390,25 @@ export default function LocalProducts() {
             )}
           </div>
 
-          {/* Discount % */}
-          <div>
+          <div className="flex-1">
             <label
               htmlFor="discountPercent"
-              className="block mb-1 font-medium text-gray-700"
+              className="block text-sm md:text-base font-medium mb-1"
             >
-              Discount % <span className="text-red-600">*</span>
+              Discount % *
             </label>
             <input
-              id="discountPercent"
               name="discountPercent"
               type="number"
               min={0}
               max={100}
               step="0.01"
               value={form.discountPercent}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${
+              onChange={handleInputChange}
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.discountPercent ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.discountPercent && (
               <p className="text-red-600 text-sm mt-1">
@@ -471,164 +416,169 @@ export default function LocalProducts() {
               </p>
             )}
           </div>
+        </div>
 
-          {/* Final Price (computed) */}
-          <div className="flex flex-col justify-end">
-            <label className="block mb-1 font-medium text-gray-700">
-              Final Price ($)
-            </label>
-            <p className="text-lg font-semibold">
-              {computeFinalPrice(
-                form.originalPrice,
-                form.discountPercent
-              ).toFixed(2)}
-            </p>
-          </div>
-
-          {/* More About Product external info */}
-          <div className="md:col-span-2">
-            <label
-              htmlFor="moreInfoLink"
-              className="block mb-1 font-medium text-gray-700"
-            >
-              More About Product (External Link)
-            </label>
-            <input
-              id="moreInfoLink"
-              name="moreInfoLink"
-              type="url"
-              value={form.moreInfoLink}
-              onChange={handleChange}
-              placeholder="https://example.com/product-info"
-              className={`w-full p-2 border rounded ${
-                errors.moreInfoLink ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.moreInfoLink && (
-              <p className="text-red-600 text-sm mt-1">{errors.moreInfoLink}</p>
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label
-              htmlFor="description"
-              className="block mb-1 font-medium text-gray-700"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              value={form.description}
-              onChange={handleChange}
-              className="w-full p-2 border rounded border-gray-300"
-            />
+        {/* Final Price (readonly) */}
+        <div className="mb-4">
+          <label className="block text-sm md:text-base font-medium mb-1">
+            Final Price ($)
+          </label>
+          <div className="px-3 py-2 rounded bg-gray-100 text-base md:text-lg">
+            {computeFinalPrice(
+              form.originalPrice,
+              form.discountPercent
+            ).toFixed(2)}
           </div>
         </div>
-        {/* Images Section */}
-        <div className="mt-4">
-          <label className="block font-semibold mb-2">
-            Product Images (up to {MAX_IMAGES})
+
+        {/* Buying Link */}
+        <div className="mb-4">
+          <label
+            htmlFor="buyingLink"
+            className="block text-sm md:text-base font-medium mb-1"
+          >
+            Buying Link (URL)
           </label>
+          <input
+            name="buyingLink"
+            value={form.buyingLink}
+            onChange={handleInputChange}
+            className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              errors.buyingLink ? "border-red-500" : "border-gray-300"
+            }`}
+            disabled={loading}
+          />
+          {errors.buyingLink && (
+            <p className="text-red-600 text-sm mt-1">{errors.buyingLink}</p>
+          )}
+        </div>
+
+        {/* Description */}
+        <div className="mb-4">
+          <label
+            htmlFor="description"
+            className="block text-sm md:text-base font-medium mb-1"
+          >
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleInputChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            rows={3}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Image Inputs Section */}
+        <div className="mb-6">
+          <label className="block text-sm md:text-base font-medium mb-2">
+            Images (up to {MAX_IMAGES})
+          </label>
+
           {imageInputs.map((input, idx) => (
-            <div key={idx} className="flex items-center space-x-2 mb-3">
+            <div
+              key={idx}
+              className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4"
+            >
+              {/* Type selector */}
               <select
                 value={input.type}
                 onChange={(e) =>
-                  handleImageInputTypeChange(
-                    idx,
-                    e.target.value as "url" | "upload"
-                  )
+                  handleImageTypeChange(idx, e.target.value as ImageInputType)
                 }
                 disabled={loading}
-                className="border rounded px-2 py-1"
+                className="w-full md:w-40 border border-gray-300 rounded px-3 py-2 mb-2 md:mb-0"
               >
-                <option value="url">Add via URL</option>
-                <option value="upload">Upload File</option>
+                <option value="url">Add Image by URL</option>
+                <option value="upload">Upload Image</option>
               </select>
+
+              {/* URL input or file input */}
               {input.type === "url" ? (
                 <input
-                  type="url"
+                  type="text"
                   placeholder="Image URL"
                   value={input.value}
-                  onChange={(e) => handleInputChange(e, idx)}
-                  name="images"
-                  className="flex-grow border rounded px-3 py-2"
+                  onChange={(e) => handleImageUrlChange(idx, e.target.value)}
+                  className={`flex-grow border rounded px-3 py-2 w-full md:w-auto ${
+                    errors[`image_${idx}`]
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  disabled={loading}
                 />
               ) : (
                 <input
                   type="file"
                   accept="image/*"
-                  disabled={loading}
                   onChange={async (e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                      await handleFileChange(e, idx);
-                    }
+                    const file = e.target.files?.[0];
+                    if (file) await handleUploadFile(idx, file);
                   }}
-                  className="flex-grow"
-                />
-              )}
-              {input.value && (
-                <img
-                  src={input.value}
-                  alt="img preview"
-                  className="w-16 h-12 object-cover rounded border"
-                />
-              )}
-              {imageInputs.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => removeImageInput(idx)}
                   disabled={loading}
-                  className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold"
-                >
-                  <Trash2 size={16} />
-                  Remove
-                </button>
+                  className="flex-grow p-1"
+                />
+              )}
+
+              {/* Remove button */}
+              <button
+                type="button"
+                onClick={() => removeImageInput(idx)}
+                disabled={loading}
+                className="mt-2 md:mt-0 text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
+                aria-label={`Remove image input ${idx + 1}`}
+              >
+                <Trash2 size={16} />
+                Remove
+              </button>
+              {errors[`image_${idx}`] && (
+                <p className="text-red-600 text-sm mt-1 md:mt-0">
+                  {errors[`image_${idx}`]}
+                </p>
               )}
             </div>
           ))}
+
+          {/* Add Image Input Button */}
           {imageInputs.length < MAX_IMAGES && (
             <button
               type="button"
               onClick={addImageInput}
-              disabled={imageInputs.length >= MAX_IMAGES || loading}
-              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
+              disabled={loading}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 via-red-400 to-pink-400 text-white rounded px-4 py-2 font-semibold shadow hover:from-yellow-500 hover:via-red-500 hover:to-pink-500 transition"
             >
-              <Plus size={18} />
+              <Plus size={20} />
               Add Image
             </button>
           )}
         </div>
 
-        <div className="flex flex-row gap-4 mt-6">
-          {/* Add/Update Product Button */}
+        {/* Submit and Clear buttons */}
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
           <button
-            className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-6 py-2 font-bold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             type="submit"
             disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 bg-pink-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-pink-700 transition disabled:opacity-50"
           >
-            <CheckSquare size={18} />
+            <CheckSquare size={20} />
             {editingId ? "Update Product" : "Add Product"}
           </button>
-          {/* Clear Button */}
           <button
             type="button"
             onClick={resetForm}
             disabled={loading}
-            className="flex items-center gap-1 bg-gradient-to-r from-gray-400 to-gray-700 text-white rounded px-6 py-2 font-bold shadow hover:from-gray-600 hover:to-gray-900 transition"
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-900 font-semibold px-4 py-2 rounded shadow hover:bg-gray-400 transition disabled:opacity-50"
           >
-            <Eraser size={18} />
+            <Eraser size={20} />
             Clear
           </button>
         </div>
       </form>
 
-      {/* Add your product list table/code below, if desired */}
-      {/* Product list table */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Products List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:overflow-x-auto">
         {products.map((prod) => (
           <LocalProductCard
             key={prod.id}
@@ -637,6 +587,16 @@ export default function LocalProducts() {
             onDelete={handleDelete}
           />
         ))}
+        {products.length === 0 && (
+          <tr>
+            <td
+              colSpan={6}
+              className="text-center py-6 text-gray-500 text-sm md:text-base"
+            >
+              No approved products found.
+            </td>
+          </tr>
+        )}
       </div>
     </div>
   );

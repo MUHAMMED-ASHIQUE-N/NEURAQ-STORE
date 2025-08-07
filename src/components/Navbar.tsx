@@ -1,28 +1,16 @@
-import { useUser } from "../contexts/UserContext";
-import { auth } from "../firebase";
-import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 
 export default function Navbar() {
-  const { user } = useUser();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
-
-  return user ? (
-    <nav className="bg-gray-100 p-3 flex gap-4 items-center">
-      <span className="text-gray-700">
-        Logged in as: <b>{user.email}</b> ({user.role})
-      </span>
-      <button
-        className="text-red-600 border border-red-300 px-3 py-1 rounded hover:bg-red-50"
-        onClick={handleLogout}
+  return (
+    <nav className="w-full bg-white border-gray-700 shadow-md px-4 py-3 flex items-center justify-center md:justify-start">
+      <span
+        className="
+          text-xl font-bold tracking-widest text-indigo-700
+          md:text-2xl md:ml-2
+        "
       >
-        Logout
-      </button>
+        Neuraq Store
+      </span>
     </nav>
-  ) : null;
+  );
 }

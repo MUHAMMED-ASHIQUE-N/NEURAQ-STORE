@@ -6,7 +6,6 @@ import {
   updateDoc,
   doc,
   onSnapshot,
-  Timestamp,
   query,
   where,
 } from "firebase/firestore";
@@ -33,6 +32,7 @@ type Product = {
 };
 
 type ImageInputType = "url" | "upload";
+
 interface ImageInput {
   type: ImageInputType;
   value: string;
@@ -41,29 +41,8 @@ interface ImageInput {
 
 const MAX_IMAGES = 5;
 
-// Cloudflare Upload Helper
-// async function uploadImageToCloudflare(file: File): Promise<string> {
-//   const CLOUDFLARE_ACCOUNT_ID = a26ad94e691df93fea801ec5e167209f;
-//   const CLOUDFLARE_API_TOKEN = cFCd3IYqHIJEInWJpK4cpLPdqr6aZPzgzVbl2_un;
-//   const formData = new FormData();
-//   formData.append("file", file);
-
-//   const res = await fetch(
-//     `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1`,
-//     {
-//       method: "POST",
-//       headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}` },
-//       body: formData,
-//     }
-//   );
-
-//   const data = await res.json();
-//   if (!res.ok || !data.success)
-//     throw new Error(data.errors?.[0]?.message || "Cloudflare upload failed");
-//   // Use default variant:
-//   return data.result.variants[0];
-// }
-async function uploadToCloudflare(file) {
+// Dummy upload function placeholder
+async function uploadToCloudflare(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("image", file);
 
@@ -71,9 +50,11 @@ async function uploadToCloudflare(file) {
     method: "POST",
     body: formData,
   });
+
   if (!res.ok) throw new Error("Upload failed");
+
   const data = await res.json();
-  return data.url; // or data.allVariants[0]
+  return data.url;
 }
 
 function computeFinalPrice(originalPrice: number, discountPercent: number) {
@@ -111,7 +92,7 @@ export default function AmazonProducts() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    // Only load approved products
+    // Load only approved products
     const unsub = onSnapshot(
       query(
         collection(firestore, "amazonProducts"),
@@ -128,6 +109,10 @@ export default function AmazonProducts() {
     return () => unsub();
   }, []);
 
+  //
+  // Handlers and helpers below
+  //
+
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
@@ -141,9 +126,7 @@ export default function AmazonProducts() {
 
   function handleImageTypeChange(idx: number, type: ImageInputType) {
     setImageInputs((arr) =>
-      arr.map((input, i) =>
-        i === idx ? { type, value: "", file: undefined } : input
-      )
+      arr.map((input, i) => (i === idx ? { type, value: "" } : input))
     );
   }
 
@@ -172,6 +155,7 @@ export default function AmazonProducts() {
   function removeImageInput(idx: number) {
     setImageInputs((arr) => arr.filter((_, i) => i !== idx));
   }
+
   function addImageInput() {
     if (imageInputs.length < MAX_IMAGES) {
       setImageInputs((arr) => [...arr, { type: "url", value: "" }]);
@@ -189,12 +173,14 @@ export default function AmazonProducts() {
       newErrors.discountPercent = "Discount % must be 0-100";
     if (form.buyingLink && !isValidUrl(form.buyingLink))
       newErrors.buyingLink = "Buying link must be a valid URL";
+
     imageInputs.forEach((input, idx) => {
       if (input.type === "url" && input.value.trim()) {
         if (!isValidUrl(input.value.trim()))
           newErrors[`image_${idx}`] = "Image URL invalid";
       }
     });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -220,7 +206,6 @@ export default function AmazonProducts() {
     setLoading(true);
     const timestamp = new Date().toISOString();
     const images = imageInputs.map((i) => i.value).filter((v) => v.trim());
-
     const finalPrice = computeFinalPrice(
       form.originalPrice,
       form.discountPercent
@@ -228,7 +213,7 @@ export default function AmazonProducts() {
 
     try {
       if (editingId) {
-        // Update product -> set as pending approval
+        // Update product, mark pending approval
         const ref = doc(firestore, "amazonProducts", editingId);
         await updateDoc(ref, {
           ...form,
@@ -236,7 +221,7 @@ export default function AmazonProducts() {
           finalPrice,
           modifiedBy: user.email,
           updatedAt: timestamp,
-          approved: false,
+          approved: false, // mark as pending approval
           rejected: false,
         });
       } else {
@@ -262,18 +247,6 @@ export default function AmazonProducts() {
     }
   }
 
-  // Rest of handlers (edit, delete) from previous code...
-  // --- Form handlers ---
-  function handleFieldChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value } = e.target;
-    if (["quantity", "originalPrice", "discountPercent"].includes(name)) {
-      setForm((f) => ({ ...f, [name]: Number(value) }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
-    }
-  }
   function handleEdit(id: string) {
     const prod = products.find((p) => p.id === id);
     if (!prod) return;
@@ -299,117 +272,105 @@ export default function AmazonProducts() {
     if (window.confirm("Delete product?")) {
       setProducts((prods) => prods.filter((p) => p.id !== id));
       if (editingId === id) resetForm();
+      // Deletion in Firestore should be handled here too if desired
     }
   }
 
-  function populateFormForEdit(prod: Product) {
-    setEditingId(prod.id);
-    setForm({
-      title: prod.title,
-      name: prod.name,
-      description: prod.description,
-      quantity: prod.quantity,
-      originalPrice: prod.originalPrice,
-      discountPercent: prod.discountPercent,
-      buyingLink: prod.buyingLink,
-    });
-    setImageInputs(
-      prod.images && prod.images.length > 0
-        ? prod.images.map((url) => ({ type: "url", value: url }))
-        : [{ type: "url", value: "" }]
-    );
-    setErrors({});
-  }
+  // --- Responsive modified JSX return ---
 
-  // RENDER
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+    <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+      <h1 className="text-2xl font-semibold mb-6">
         Amazon Products Management
       </h1>
+
       {message && (
-        <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
           {message}
         </div>
       )}
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-4xl bg-white rounded-xl shadow p-6 mb-8"
-        noValidate
-      >
+
+      <form onSubmit={handleSubmit} className="mb-8">
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add Amazon Product"}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* ... The same field inputs as your code ... */}
-          <div>
-            <label className="block font-medium mb-1">Title *</label>
+
+        {/* Title and Name - stacked on mobile, side by side on md+ */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
+            <label htmlFor="title" className="block font-medium mb-1">
+              Title *
+            </label>
             <input
               name="title"
-              type="text"
               value={form.title}
               onChange={handleInputChange}
-              className={`w-full p-2 border rounded ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.title && (
               <p className="text-red-600 text-sm mt-1">{errors.title}</p>
             )}
           </div>
-          {/* repeat for name, description, quantity, originalPrice, discountPercent, buyingLink */}
-          {/* ... */}
-          {/* Name */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Name <span className="text-red-600">*</span>
+
+          <div className="flex-1">
+            <label htmlFor="name" className="block font-medium mb-1">
+              Name *
             </label>
             <input
               name="name"
-              type="text"
               value={form.name}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              onChange={handleInputChange}
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.name && (
               <p className="text-red-600 text-sm mt-1">{errors.name}</p>
             )}
           </div>
-          {/* Quantity */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Quantity <span className="text-red-600">*</span>
+        </div>
+
+        {/* Quantity, Original Price, Discount Percent - flex row on md */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
+            <label htmlFor="quantity" className="block font-medium mb-1">
+              Quantity *
             </label>
             <input
               name="quantity"
               type="number"
               min={0}
               value={form.quantity}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              onChange={handleInputChange}
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.quantity ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.quantity && (
               <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
             )}
           </div>
-          {/* Original Price */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Original Price ($) <span className="text-red-600">*</span>
+
+          <div className="flex-1 mb-4 md:mb-0">
+            <label htmlFor="originalPrice" className="block font-medium mb-1">
+              Original Price ($) *
             </label>
             <input
               name="originalPrice"
               type="number"
               min={0}
+              step="0.01"
               value={form.originalPrice}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              onChange={handleInputChange}
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.originalPrice ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.originalPrice && (
               <p className="text-red-600 text-sm mt-1">
@@ -417,21 +378,23 @@ export default function AmazonProducts() {
               </p>
             )}
           </div>
-          {/* Discount Percent */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Discount % <span className="text-red-600">*</span>
+
+          <div className="flex-1">
+            <label htmlFor="discountPercent" className="block font-medium mb-1">
+              Discount % *
             </label>
             <input
               name="discountPercent"
               type="number"
               min={0}
               max={100}
+              step="0.01"
               value={form.discountPercent}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              onChange={handleInputChange}
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.discountPercent ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.discountPercent && (
               <p className="text-red-600 text-sm mt-1">
@@ -439,84 +402,85 @@ export default function AmazonProducts() {
               </p>
             )}
           </div>
-          {/* Computed Final Price */}
-          <div className="flex flex-col justify-end">
-            <label className="block font-medium text-gray-700">
-              Final Price ($)
-            </label>
-            <p className="text-lg font-semibold mb-1">
-              {computeFinalPrice(
-                form.originalPrice,
-                form.discountPercent
-              ).toFixed(2)}
-            </p>
-          </div>
-          {/* Buying Link */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium text-gray-700">
-              Buying Link (URL)
-            </label>
-            <input
-              name="buyingLink"
-              type="url"
-              value={form.buyingLink}
-              onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
-                errors.buyingLink ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.buyingLink && (
-              <p className="text-red-600 text-sm mt-1">{errors.buyingLink}</p>
-            )}
-          </div>
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              name="description"
-              rows={3}
-              value={form.description}
-              onChange={handleFieldChange}
-              className="w-full border px-3 py-2 rounded border-gray-300"
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Final Price</label>
-            <p className="p-2 font-semibold">
-              {computeFinalPrice(
-                form.originalPrice,
-                form.discountPercent
-              ).toFixed(2)}
-            </p>
+        </div>
+
+        {/* Computed Final Price (read-only) */}
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Final Price ($)</label>
+          <div className="px-3 py-2 rounded bg-gray-100">
+            {computeFinalPrice(
+              form.originalPrice,
+              form.discountPercent
+            ).toFixed(2)}
           </div>
         </div>
-        {/* IMAGE INPUTS */}
-        <div className="mt-5">
-          <label className="block mb-2 font-semibold text-gray-700">
+
+        {/* Buying Link */}
+        <div className="mb-4">
+          <label htmlFor="buyingLink" className="block font-medium mb-1">
+            Buying Link (URL)
+          </label>
+          <input
+            name="buyingLink"
+            value={form.buyingLink}
+            onChange={handleInputChange}
+            className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              errors.buyingLink ? "border-red-500" : "border-gray-300"
+            }`}
+            disabled={loading}
+          />
+          {errors.buyingLink && (
+            <p className="text-red-600 text-sm mt-1">{errors.buyingLink}</p>
+          )}
+        </div>
+
+        {/* Description */}
+        <div className="mb-4">
+          <label htmlFor="description" className="block font-medium mb-1">
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleInputChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            rows={3}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Image Inputs Section */}
+        <div className="mb-6">
+          <label className="block font-medium mb-2">
             Images (up to {MAX_IMAGES})
           </label>
+
           {imageInputs.map((input, idx) => (
-            <div key={idx} className="flex items-center gap-2 mb-3">
+            <div
+              key={idx}
+              className="flex flex-col md:flex-row md:items-center md:space-x-3 mb-4"
+            >
+              {/* Type selector */}
               <select
                 value={input.type}
                 onChange={(e) =>
                   handleImageTypeChange(idx, e.target.value as ImageInputType)
                 }
-                className="border rounded p-1"
                 disabled={loading}
+                className="mb-2 md:mb-0 border border-gray-300 rounded px-3 py-2 w-full md:w-40"
               >
                 <option value="url">Add Image by URL</option>
                 <option value="upload">Upload Image</option>
               </select>
+
+              {/* URL input or file upload */}
               {input.type === "url" ? (
                 <input
-                  type="url"
+                  type="text"
+                  placeholder="Image URL"
                   value={input.value}
                   onChange={(e) => handleImageUrlChange(idx, e.target.value)}
-                  placeholder="Image URL"
-                  className={`flex-grow p-2 border rounded ${
+                  className={`flex-grow border rounded px-3 py-2 ${
                     errors[`image_${idx}`]
                       ? "border-red-500"
                       : "border-gray-300"
@@ -531,77 +495,83 @@ export default function AmazonProducts() {
                     const file = e.target.files?.[0];
                     if (file) await handleUploadFile(idx, file);
                   }}
-                  className="flex-grow"
                   disabled={loading}
+                  className="flex-grow p-1"
                 />
               )}
-              {input.value && (
-                <img
-                  src={input.value}
-                  alt={`Image Preview ${idx + 1}`}
-                  className="w-16 h-12 object-cover rounded border"
-                />
-              )}
+
+              {/* Remove button */}
               <button
                 type="button"
                 onClick={() => removeImageInput(idx)}
                 disabled={loading}
-                className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold"
+                className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold mt-2 md:mt-0 md:ml-2"
+                aria-label={`Remove image input ${idx + 1}`}
               >
                 <Trash2 size={16} />
                 Remove
               </button>
-
               {errors[`image_${idx}`] && (
-                <span className="text-red-600 text-sm">
+                <p className="text-red-600 text-sm mt-1 md:mt-0">
                   {errors[`image_${idx}`]}
-                </span>
+                </p>
               )}
             </div>
           ))}
+
+          {/* Add Image Input Button */}
           {imageInputs.length < MAX_IMAGES && (
             <button
               type="button"
               onClick={addImageInput}
-              disabled={imageInputs.length >= MAX_IMAGES || loading}
-              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
+              disabled={loading}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-4 py-2 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             >
-              <Plus size={18} />
+              <Plus size={20} />
               Add Image
             </button>
           )}
         </div>
-        <div className="mt-6 flex gap-4">
+
+        {/* Submit and Clear buttons */}
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
           <button
-            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-6 py-2 font-bold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             type="submit"
             disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            <CheckSquare size={18} />
+            <CheckSquare size={20} />
             {editingId ? "Update Product" : "Add Product"}
           </button>
-
           <button
             type="button"
             onClick={resetForm}
             disabled={loading}
-            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-gray-400 to-gray-700 text-white rounded px-6 py-2 font-bold shadow hover:from-gray-600 hover:to-gray-900 transition"
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-900 font-semibold px-4 py-2 rounded shadow hover:bg-gray-400 transition disabled:opacity-50"
           >
-            <Eraser size={18} />
+            <Eraser size={20} />
             Clear
           </button>
         </div>
       </form>
-      {/* Approved Product Table */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      {/* Approved Products List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:overflow-x-auto">
         {products.map((prod) => (
           <AmazonProductCard
             key={prod.id}
             product={prod}
-            onEdit={populateFormForEdit}
+            onEdit={handleEdit}
             onDelete={handleDelete}
           />
         ))}
+        {products.length === 0 && (
+          <tr>
+            <td colSpan={6} className="text-center py-6 text-gray-500">
+              No approved products found.
+            </td>
+          </tr>
+        )}
       </div>
     </div>
   );

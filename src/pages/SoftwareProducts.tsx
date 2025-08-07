@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+
 import { Plus, CheckSquare, Eraser, Trash2 } from "lucide-react";
+
 import {
   collection,
   addDoc,
@@ -10,8 +12,11 @@ import {
   where,
   Timestamp,
 } from "firebase/firestore";
+
 import { firestore } from "../firebase";
+
 import { useUser } from "../contexts/UserContext";
+
 import SoftwareProductCard from "../components/SoftwareProductCard";
 
 type Product = {
@@ -46,6 +51,7 @@ export default function SoftwareProducts() {
   const { user } = useUser();
 
   const [products, setProducts] = useState<Product[]>([]);
+
   const [form, setForm] = useState({
     title: "",
     name: "",
@@ -56,9 +62,11 @@ export default function SoftwareProducts() {
     companyName: "",
     accessDuration: "",
   });
+
   const [imageInputs, setImageInputs] = useState<ImageInput[]>([
     { type: "url", value: "" },
   ]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -76,11 +84,12 @@ export default function SoftwareProducts() {
       });
       setProducts(prods);
     });
+
     return () => unsubscribe();
   }, []);
 
-  function computeFinalPrice() {
-    return form.originalPrice * (1 - form.discountPercent / 100);
+  function computeFinalPrice(originalPrice: number, discountPercent: number) {
+    return originalPrice * (1 - discountPercent / 100);
   }
 
   function isValidUrl(url: string) {
@@ -121,8 +130,8 @@ export default function SoftwareProducts() {
       method: "POST",
       body: formData,
     });
-
     if (!response.ok) throw new Error("Image upload failed");
+
     const data = await response.json();
     return data.url;
   }
@@ -187,11 +196,14 @@ export default function SoftwareProducts() {
     try {
       const images = imageInputs.map((imgObj) => imgObj.value).filter(Boolean);
       const timestamp = Timestamp.now();
-      const finalPrice = computeFinalPrice();
+      const finalPrice = computeFinalPrice(
+        form.originalPrice,
+        form.discountPercent
+      );
       const payload = {
-        ...form, // title, name, etc.
-        images, // <--------- array of image URLs
-        finalPrice: computeFinalPrice(form.originalPrice, form.discountPercent),
+        ...form,
+        images,
+        finalPrice,
         createdBy: user.email,
         modifiedBy: user.email,
         createdAt: timestamp,
@@ -199,7 +211,6 @@ export default function SoftwareProducts() {
         approved: false,
         rejected: false,
       };
-
       if (editingId) {
         await updateDoc(doc(firestore, "softwareProducts", editingId), payload);
       } else {
@@ -235,10 +246,11 @@ export default function SoftwareProducts() {
     if (window.confirm("Delete product?")) {
       setProducts((prods) => prods.filter((p) => p.id !== id));
       if (editingId === id) resetForm();
+      // You should also delete from firestore here if desired
     }
   }
 
-  function handleEdit(product) {
+  function handleEdit(product: Product) {
     setEditingId(product.id);
     setForm({
       title: product.title || "",
@@ -259,62 +271,75 @@ export default function SoftwareProducts() {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <h1 className="text-2xl md:text-3xl font-semibold mb-6">
         Software Products Management
       </h1>
 
-      {message && <div className="mb-4 text-green-600">{message}</div>}
+      {message && (
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+          {message}
+        </div>
+      )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-4xl bg-white rounded-xl shadow p-6 mb-8"
-        noValidate
-      >
-        <h2 className="text-xl font-semibold mb-4">
+      <form onSubmit={handleSubmit} className="mb-8">
+        <h2 className="text-xl md:text-2xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add Software Product"}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Title */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Title <span className="text-red-600">*</span>
+
+        {/* Title and Name */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
+            <label
+              htmlFor="title"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Title *
             </label>
             <input
               name="title"
-              type="text"
               value={form.title}
               onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.title && (
               <p className="text-red-600 text-sm mt-1">{errors.title}</p>
             )}
           </div>
-          {/* Name */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Name <span className="text-red-600">*</span>
+
+          <div className="flex-1">
+            <label
+              htmlFor="name"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Name *
             </label>
             <input
               name="name"
-              type="text"
               value={form.name}
               onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.name && (
               <p className="text-red-600 text-sm mt-1">{errors.name}</p>
             )}
           </div>
-          {/* Quantity */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Quantity <span className="text-red-600">*</span>
+        </div>
+
+        {/* Quantity, Company Name, Access Duration */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
+            <label
+              htmlFor="quantity"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Quantity *
             </label>
             <input
               name="quantity"
@@ -322,46 +347,52 @@ export default function SoftwareProducts() {
               min={0}
               value={form.quantity}
               onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.quantity ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.quantity && (
               <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
             )}
           </div>
-          {/* Company Name */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Company Name <span className="text-red-600">*</span>
+
+          <div className="flex-1 mb-4 md:mb-0">
+            <label
+              htmlFor="companyName"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Company Name *
             </label>
             <input
               name="companyName"
-              type="text"
               value={form.companyName}
               onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.companyName ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.companyName && (
               <p className="text-red-600 text-sm mt-1">{errors.companyName}</p>
             )}
           </div>
-          {/* Access Duration */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Access Duration <span className="text-red-600">*</span>
+
+          <div className="flex-1">
+            <label
+              htmlFor="accessDuration"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Access Duration *
             </label>
             <input
               name="accessDuration"
-              type="text"
               value={form.accessDuration}
               onChange={handleFieldChange}
-              placeholder="e.g. 1 year, lifetime, 30 days"
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.accessDuration ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.accessDuration && (
               <p className="text-red-600 text-sm mt-1">
@@ -369,20 +400,28 @@ export default function SoftwareProducts() {
               </p>
             )}
           </div>
-          {/* Original Price */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Original Price ($) <span className="text-red-600">*</span>
+        </div>
+
+        {/* Original Price and Discount Percent */}
+        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
+          <div className="flex-1 mb-4 md:mb-0">
+            <label
+              htmlFor="originalPrice"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Original Price ($) *
             </label>
             <input
               name="originalPrice"
               type="number"
               min={0}
+              step="0.01"
               value={form.originalPrice}
               onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.originalPrice ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.originalPrice && (
               <p className="text-red-600 text-sm mt-1">
@@ -390,21 +429,26 @@ export default function SoftwareProducts() {
               </p>
             )}
           </div>
-          {/* Discount Percent */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Discount % <span className="text-red-600">*</span>
+
+          <div className="flex-1">
+            <label
+              htmlFor="discountPercent"
+              className="block text-sm md:text-base font-medium mb-1"
+            >
+              Discount % *
             </label>
             <input
               name="discountPercent"
               type="number"
               min={0}
               max={100}
+              step="0.01"
               value={form.discountPercent}
               onChange={handleFieldChange}
-              className={`w-full border px-3 py-2 rounded ${
+              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.discountPercent ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={loading}
             />
             {errors.discountPercent && (
               <p className="text-red-600 text-sm mt-1">
@@ -412,43 +456,54 @@ export default function SoftwareProducts() {
               </p>
             )}
           </div>
-          {/* Computed Final Price */}
-          <div className="flex flex-col justify-end">
-            <label className="block font-medium text-gray-700">
-              Final Price ($)
-            </label>
-            <p className="text-lg font-semibold mb-1">
-              {computeFinalPrice(
-                form.originalPrice,
-                form.discountPercent
-              ).toFixed(2)}
-            </p>
-          </div>
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              name="description"
-              rows={3}
-              value={form.description}
-              onChange={handleFieldChange}
-              className="w-full border px-3 py-2 rounded border-gray-300"
-            />
+        </div>
+
+        {/* Computed Final Price (read-only) */}
+        <div className="mb-4">
+          <label className="block text-sm md:text-base font-medium mb-1">
+            Final Price ($)
+          </label>
+          <div className="px-3 py-2 rounded bg-gray-100 text-base md:text-lg">
+            {computeFinalPrice(
+              form.originalPrice,
+              form.discountPercent
+            ).toFixed(2)}
           </div>
         </div>
-        <div className="mt-4">
-          <label className="block font-bold mb-2">
+
+        {/* Description */}
+        <div className="mb-4">
+          <label
+            htmlFor="description"
+            className="block text-sm md:text-base font-medium mb-1"
+          >
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleFieldChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            rows={3}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Image Inputs Section */}
+        <div className="mb-6">
+          <label className="block text-sm md:text-base font-medium mb-2">
             Images (max {MAX_IMAGES})
           </label>
+
           {imageInputs.map((input, idx) => (
-            <div key={idx} className="flex space-x-2 items-center mb-2">
+            <div
+              key={idx}
+              className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4"
+            >
+              {/* Type selector */}
               <select
-                className="border rounded p-1"
-                disabled={loading}
                 value={input.type}
-                onChange={(e) => {
+                onChange={(e) =>
                   setImageInputs((imgs) =>
                     imgs.map((img, i) =>
                       i === idx
@@ -458,23 +513,20 @@ export default function SoftwareProducts() {
                           }
                         : img
                     )
-                  );
-                }}
+                  )
+                }
+                disabled={loading}
+                className="w-full md:w-40 border border-gray-300 rounded px-3 py-2 mb-2 md:mb-0"
               >
                 <option value="url">Add Image by URL</option>
-                <option value="upload">Upload Local Image</option>
+                <option value="upload">Upload Image</option>
               </select>
 
+              {/* URL input or file input */}
               {input.type === "url" ? (
                 <input
-                  type="url"
+                  type="text"
                   placeholder="Image URL"
-                  className={`flex-grow p-2 border rounded ${
-                    errors[`image_${idx}`]
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
-                  disabled={loading}
                   value={input.value}
                   onChange={(e) =>
                     setImageInputs((imgs) =>
@@ -483,6 +535,12 @@ export default function SoftwareProducts() {
                       )
                     )
                   }
+                  className={`flex-grow border rounded px-3 py-2 w-full md:w-auto ${
+                    errors[`image_${idx}`]
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  disabled={loading}
                 />
               ) : (
                 <input
@@ -490,73 +548,70 @@ export default function SoftwareProducts() {
                   accept="image/*"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (file)
-                      await handleFileChange(
-                        e as React.ChangeEvent<HTMLInputElement>,
-                        idx
-                      );
+                    if (file) await handleFileChange(e, idx);
                   }}
                   disabled={loading}
+                  className="flex-grow p-1"
                 />
               )}
 
-              {input.value && (
-                <img
-                  src={input.value}
-                  alt="Preview"
-                  className="w-16 h-12 object-cover rounded border"
-                />
-              )}
-
+              {/* Remove button */}
               <button
                 type="button"
                 onClick={() => removeImageInput(idx)}
                 disabled={loading}
-                className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold"
+                className="mt-2 md:mt-0 text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
+                aria-label={`Remove image input ${idx + 1}`}
               >
                 <Trash2 size={16} />
                 Remove
               </button>
+              {errors[`image_${idx}`] && (
+                <p className="text-red-600 text-sm mt-1 md:mt-0">
+                  {errors[`image_${idx}`]}
+                </p>
+              )}
             </div>
           ))}
 
+          {/* Add Image Input Button */}
           {imageInputs.length < MAX_IMAGES && (
             <button
               type="button"
               onClick={addImageInput}
-              disabled={imageInputs.length >= MAX_IMAGES || loading}
-              className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
+              disabled={loading}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 text-white rounded px-4 py-2 font-semibold shadow hover:from-indigo-500 hover:via-blue-500 hover:to-cyan-500 transition"
             >
-              <Plus size={18} />
+              <Plus size={20} />
               Add Image
             </button>
           )}
         </div>
 
-        <div className="mt-6 flex space-x-4">
+        {/* Submit and Clear buttons */}
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
           <button
-            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-6 py-2 font-bold shadow hover:from-blue-600 hover:to-indigo-600 transition"
             type="submit"
             disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            <CheckSquare size={18} />
+            <CheckSquare size={20} />
             {editingId ? "Update Product" : "Add Product"}
           </button>
-
           <button
             type="button"
             onClick={resetForm}
             disabled={loading}
-            className="flex items-center gap-1 mt-6 bg-gradient-to-r from-gray-400 to-gray-700 text-white rounded px-6 py-2 font-bold shadow hover:from-gray-600 hover:to-gray-900 transition"
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-900 font-semibold px-4 py-2 rounded shadow hover:bg-gray-400 transition disabled:opacity-50"
           >
-            <Eraser size={18} />
+            <Eraser size={20} />
             Clear
           </button>
         </div>
       </form>
 
-      {/* Your products table goes here */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Products List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:overflow-x-auto">
         {products.map((prod) => (
           <SoftwareProductCard
             key={prod.id}
@@ -565,6 +620,16 @@ export default function SoftwareProducts() {
             onDelete={handleDelete}
           />
         ))}
+        {products.length === 0 && (
+          <tr>
+            <td
+              colSpan={8}
+              className="text-center py-6 text-gray-500 text-sm md:text-base"
+            >
+              No approved products found.
+            </td>
+          </tr>
+        )}
       </div>
     </div>
   );

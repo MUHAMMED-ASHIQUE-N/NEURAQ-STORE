@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   collection,
   query,
@@ -5,321 +6,350 @@ import {
   onSnapshot,
   doc,
   updateDoc,
-  deleteDoc,
-  getDocs,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
 import { firestore } from "../firebase";
-import {
-  ArrowUpCircle,
-  ArrowDownCircle,
-  CheckCircle,
-  XCircle,
-  Send,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Pencil, Check, X } from "lucide-react";
 
-// ...rest of your code...
 type Product = {
   id: string;
+  collectionName: "amazonProducts" | "localProducts" | "softwareProducts";
   title: string;
   name: string;
   quantity: number;
   finalPrice: number;
   createdBy: string;
-  collectionName: string;
+  approved: boolean;
+  rejected?: boolean;
 };
 
 type User = {
   id: string;
   email: string;
-  role: string;
+  role?: string;
 };
 
-const SEMI_ADMIN_ROLES = [
+type RoleEdits = Record<string, string | undefined>;
+
+const availableRoles = [
+  "user",
+  "main-admin",
   "amazon-semi-admin",
   "local-semi-admin",
   "software-semi-admin",
 ];
 
 export default function MainAdminApprovals() {
-  // ...existing state/logic...
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // --- User Management State ---
-  const [users, setUsers] = useState([]);
-  const [roleEdits, setRoleEdits] = useState<{ [id: string]: string }>({});
-  const [pendingSave, setPendingSave] = useState<{ [id: string]: boolean }>({});
-  const [roleError, setRoleError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [roleEdits, setRoleEdits] = useState<RoleEdits>({});
+  const [loadingActionIds, setLoadingActionIds] = useState<string[]>([]);
 
-  // Fetch products to approve (existing logic)
+  // Fetch pending products from all 3 collections
   useEffect(() => {
-    const collections = ["amazonProducts", "localProducts", "softwareProducts"];
-    let unsubscribes: (() => void)[] = [];
-    let mergedProducts: Product[] = [];
-    function loadFromCollection(collectionName: string) {
+    const subs = [];
+
+    // Helper: fetch pending docs from a collection, map to unified product and listen
+    function fetchPendingProductsFromCollection(
+      collectionName: Product["collectionName"]
+    ) {
       const q = query(
         collection(firestore, collectionName),
         where("approved", "==", false),
         where("rejected", "==", false)
       );
-      const unsub = onSnapshot(
-        q,
-        (snapshot) => {
-          mergedProducts = mergedProducts.filter(
-            (p) => p.collectionName !== collectionName
-          );
-          const newDocs = snapshot.docs.map((docSnap) => {
-            const data = docSnap.data() as any;
-            return {
-              id: docSnap.id,
-              title: data.title,
-              name: data.name,
-              quantity: data.quantity,
-              finalPrice:
-                data.finalPrice ??
-                data.originalPrice * (1 - (data.discountPercent ?? 0) / 100),
-              createdBy: data.createdBy,
-              collectionName,
-            } as Product;
+      return onSnapshot(q, (snapshot) => {
+        const prods: Product[] = [];
+        snapshot.forEach((docSnap) => {
+          prods.push({
+            id: docSnap.id,
+            collectionName,
+            ...(docSnap.data() as Omit<Product, "id" | "collectionName">),
           });
-          mergedProducts = [...mergedProducts, ...newDocs];
-          setProducts([...mergedProducts]);
-          setLoading(false);
-        },
-        (err) => {
-          setError(
-            "Failed to load approvals from " +
-              collectionName +
-              ": " +
-              err.message
-          );
-          setLoading(false);
-        }
-      );
-      unsubscribes.push(unsub);
+        });
+        setProducts((prev) => {
+          // Remove old products from this collection and add updated ones
+          const rest = prev.filter((p) => p.collectionName !== collectionName);
+          return [...rest, ...prods];
+        });
+      });
     }
-    collections.forEach(loadFromCollection);
+
+    subs.push(fetchPendingProductsFromCollection("amazonProducts"));
+    subs.push(fetchPendingProductsFromCollection("localProducts"));
+    subs.push(fetchPendingProductsFromCollection("softwareProducts"));
+
     return () => {
-      unsubscribes.forEach((unsub) => unsub());
+      subs.forEach((unsub) => unsub());
     };
   }, []);
 
-  // Fetch users
+  // Fetch users collection
   useEffect(() => {
-    const unsub = onSnapshot(collection(firestore, "users"), (snap) => {
-      const usrs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setUsers(usrs);
+    const q = collection(firestore, "users");
+    const unsub = onSnapshot(q, (snapshot) => {
+      const loadedUsers: User[] = [];
+      snapshot.forEach((doc) => {
+        loadedUsers.push({ id: doc.id, ...(doc.data() as User) });
+      });
+      setUsers(loadedUsers);
     });
     return () => unsub();
   }, []);
 
-  // Handler to start editing a role
-  function handleEditRole(id: string, current: string) {
-    setRoleEdits({ ...roleEdits, [id]: current });
-  }
-
-  // Handler to set new role
-  function handleChangeRole(id: string, value: string) {
-    setRoleEdits({ ...roleEdits, [id]: value });
-  }
-
-  // Handler to submit role change
-  async function handleSubmitRole(id: string) {
-    setPendingSave({ ...pendingSave, [id]: true });
-    setRoleError(null);
+  // Handle approve product: set approved = true
+  async function approveProduct(product: Product) {
+    setLoadingActionIds((ids) => [...ids, product.id]);
     try {
-      await updateDoc(doc(firestore, "users", id), { role: roleEdits[id] });
-      setRoleEdits((ed) => {
-        const out = { ...ed };
-        delete out[id];
-        return out;
-      });
-    } catch (e: any) {
-      setRoleError("Failed to save role: " + e.message);
+      const ref = doc(firestore, product.collectionName, product.id);
+      await updateDoc(ref, { approved: true, rejected: false });
+      // Automatically removed from pending due to query filter
+    } catch (e) {
+      alert("Failed to approve product: " + (e as Error).message);
     } finally {
-      setPendingSave((p) => {
-        const out = { ...p };
-        delete out[id];
-        return out;
-      });
+      setLoadingActionIds((ids) => ids.filter((id) => id !== product.id));
     }
   }
 
-  // Handler to cancel role edit
-  function handleCancelEdit(id: string) {
-    setRoleEdits((ed) => {
-      const out = { ...ed };
-      delete out[id];
-      return out;
+  // Handle reject product: set rejected = true
+  async function rejectProduct(product: Product) {
+    setLoadingActionIds((ids) => [...ids, product.id]);
+    try {
+      const ref = doc(firestore, product.collectionName, product.id);
+      await updateDoc(ref, { rejected: true, approved: false });
+      // Automatically removed from pending due to query filter
+    } catch (e) {
+      alert("Failed to reject product: " + (e as Error).message);
+    } finally {
+      setLoadingActionIds((ids) => ids.filter((id) => id !== product.id));
+    }
+  }
+
+  // Handle initiating role edit for a user
+  function initiateRoleEdit(userId: string) {
+    setRoleEdits((prev) => ({
+      ...prev,
+      [userId]: users.find((u) => u.id === userId)?.role || "user",
+    }));
+  }
+
+  // Handle change role selection
+  function changeRole(userId: string, role: string) {
+    setRoleEdits((prev) => ({ ...prev, [userId]: role }));
+  }
+
+  // Cancel role editing for a user
+  function cancelRoleEdit(userId: string) {
+    setRoleEdits((prev) => {
+      const copy = { ...prev };
+      delete copy[userId];
+      return copy;
     });
   }
 
-  // ...rest of your product approvals render...
-  // Approve product
-  async function approveProduct(prod: Product) {
-    setActionLoading(prod.id);
+  // Submit role change to Firestore
+  async function submitRoleChange(userId: string) {
+    if (!roleEdits[userId]) return;
+    setLoadingActionIds((ids) => [...ids, userId]);
     try {
-      const ref = doc(firestore, prod.collectionName, prod.id);
-      await updateDoc(ref, {
-        approved: true,
-        approvedAt: new Date().toISOString(),
-      });
-    } catch (err: any) {
-      setError(`Error approving product: ${err.message}`);
+      const ref = doc(firestore, "users", userId);
+      await updateDoc(ref, { role: roleEdits[userId] });
+      // Clear edit state
+      cancelRoleEdit(userId);
+    } catch (e) {
+      alert("Failed to update user role: " + (e as Error).message);
     } finally {
-      setActionLoading(null);
+      setLoadingActionIds((ids) => ids.filter((id) => id !== userId));
     }
   }
 
-  // Reject product
-  async function rejectProduct(prod: Product) {
-    setActionLoading(prod.id);
-    try {
-      const ref = doc(firestore, prod.collectionName, prod.id);
-      await deleteDoc(ref);
-    } catch (err: any) {
-      setError(`Error rejecting product: ${err.message}`);
-    } finally {
-      setActionLoading(null);
-    }
-  }
+  const isLoading = (id: string) => loadingActionIds.includes(id);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded shadow flex flex-col gap-10">
-      {/* --- Your existing pending approvals table --- */}
-      <div>
-        <h2 className="text-2xl mb-4 font-semibold">
+    <div className="p-4 md:p-6 lg:p-8 max-w-full">
+      {/* Products Pending Approval Table */}
+      <div className="overflow-x-auto mb-10">
+        <h2 className="text-xl font-semibold mb-4">
           Pending Product Approvals
         </h2>
-        {loading ? (
-          <div>Loading pending approvals...</div>
-        ) : error ? (
-          <div className="text-red-600 mb-4">{error}</div>
-        ) : products.length === 0 ? (
-          <div>No pending approvals.</div>
-        ) : (
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2">Source</th>
-                <th className="border px-4 py-2">Title</th>
-                <th className="border px-4 py-2">Name</th>
-                <th className="border px-4 py-2">Quantity</th>
-                <th className="border px-4 py-2">Final Price</th>
-                <th className="border px-4 py-2">Created By</th>
-                <th className="border px-4 py-2">Actions</th>
+        <table className="min-w-full table-auto border border-gray-300 divide-y divide-gray-200 rounded">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[80px]">
+                Collection
+              </th>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
+                Title
+              </th>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[100px]">
+                Name
+              </th>
+              <th className="px-2 py-2 text-center whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[60px]">
+                Quantity
+              </th>
+              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[100px]">
+                Final Price
+              </th>
+              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
+                Created By
+              </th>
+              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {products.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="text-center py-6 text-gray-500 text-xs md:text-sm"
+                >
+                  No pending products for approval.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {products.map((prod) => (
-                <tr key={prod.id} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2 capitalize">
-                    {prod.collectionName.replace("Products", "")}
+            ) : (
+              products.map((product) => (
+                <tr
+                  key={`${product.collectionName}-${product.id}`}
+                  className="hover:bg-gray-50"
+                >
+                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
+                    {product.collectionName.replace("Products", "")}
                   </td>
-                  <td className="border px-4 py-2">{prod.title}</td>
-                  <td className="border px-4 py-2">{prod.name}</td>
-                  <td className="border px-4 py-2">{prod.quantity}</td>
-                  <td className="border px-4 py-2">
-                    ${prod.finalPrice.toFixed(2)}
+                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
+                    {product.title}
                   </td>
-                  <td className="border px-4 py-2">{prod.createdBy}</td>
-                  <td className="border px-4 py-2 flex gap-2">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
+                    {product.name}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-center text-xs md:text-sm text-gray-700">
+                    {product.quantity}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
+                    ${product.finalPrice.toFixed(2)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
+                    {product.createdBy}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700 flex space-x-2">
                     <button
-                      onClick={() => approveProduct(prod)}
-                      disabled={actionLoading === prod.id}
-                      className="flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-60"
+                      disabled={isLoading(product.id)}
+                      onClick={() => approveProduct(product)}
                       title="Approve"
+                      className="flex items-center space-x-1 text-green-600 hover:text-green-800 disabled:opacity-50"
                     >
-                      <CheckCircle size={18} />
-                      {actionLoading === prod.id ? "Approving..." : "Approve"}
+                      <CheckCircle2 size={16} />
+                      <span>Accept</span>
                     </button>
                     <button
-                      onClick={() => rejectProduct(prod)}
-                      disabled={actionLoading === prod.id}
-                      className="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-60"
+                      disabled={isLoading(product.id)}
+                      onClick={() => rejectProduct(product)}
                       title="Reject"
+                      className="flex items-center space-x-1 text-red-600 hover:text-red-800 disabled:opacity-50"
                     >
-                      <XCircle size={18} />
-                      {actionLoading === prod.id ? "Rejecting..." : "Reject"}
+                      <XCircle size={16} />
+                      <span>Reject</span>
                     </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-      {/* ...all product approvals code here, unchanged... */}
 
-      {/* --- User Management Table (for main admin and role updates) --- */}
-      <div className="max-w-4xl mt-12 p-6 bg-white rounded shadow border">
-        <h2 className="text-xl font-bold mb-6">Registered Accounts & Roles</h2>
-        {roleError && <div className="text-red-600 mb-2">{roleError}</div>}
-        <table className="min-w-full border text-sm">
-          <thead className="bg-gray-200">
+      {/* Users Table */}
+      <div className="overflow-x-auto">
+        <h2 className="text-xl font-semibold mb-4">Users</h2>
+        <table className="min-w-full table-auto border border-gray-300 divide-y divide-gray-200 rounded">
+          <thead className="bg-gray-100">
             <tr>
-              <th className="px-3 py-2 border">Email</th>
-              <th className="px-3 py-2 border">Current Role</th>
-              <th className="px-3 py-2 border">Change Role</th>
-              <th className="px-3 py-2 border">Actions</th>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
+                User
+              </th>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
+                Current Role
+              </th>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[220px]">
+                Change Role
+              </th>
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {users.map((usr: any) => (
-              <tr key={usr.id} className="border hover:bg-gray-50">
-                <td className="px-3 py-2 border">{usr.email}</td>
-                <td className="px-3 py-2 border">{usr.role || "user"}</td>
-                <td className="px-3 py-2 border">
-                  {roleEdits[usr.id] === undefined ? (
-                    <button
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
-                      onClick={() => handleEditRole(usr.id, usr.role || "user")}
-                      aria-label="Change role"
-                    >
-                      <ArrowUpCircle size={18} /> Change
-                    </button>
-                  ) : (
-                    <select
-                      value={roleEdits[usr.id]}
-                      onChange={(e) => handleChangeRole(usr.id, e.target.value)}
-                      className="border rounded px-2 py-1"
-                    >
-                      <option value="user">user</option>
-                      <option value="amazon-semi-admin">
-                        amazon-semi-admin
-                      </option>
-                      <option value="local-semi-admin">local-semi-admin</option>
-                      <option value="software-semi-admin">
-                        software-semi-admin
-                      </option>
-                    </select>
-                  )}
-                </td>
-                <td className="px-3 py-2 border">
-                  {roleEdits[usr.id] !== undefined && (
-                    <span className="flex gap-2">
-                      <button
-                        onClick={() => handleSubmitRole(usr.id)}
-                        className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-lime-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-green-600 hover:to-lime-600 transition"
-                        disabled={pendingSave[usr.id]}
-                        aria-label="Submit role change"
-                      >
-                        <Send size={16} /> Submit
-                      </button>
-                      <button
-                        onClick={() => handleCancelEdit(usr.id)}
-                        className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded px-3 py-1 font-semibold shadow hover:from-red-600 hover:to-pink-600 transition"
-                        aria-label="Cancel role edit"
-                      >
-                        <XCircle size={16} /> Cancel
-                      </button>
-                    </span>
-                  )}
+          <tbody className="bg-white divide-y divide-gray-200">
+            {users.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="text-center py-6 text-gray-500 text-xs md:text-sm"
+                >
+                  No users found.
                 </td>
               </tr>
-            ))}
+            ) : (
+              users.map((user) => {
+                const editing = roleEdits.hasOwnProperty(user.id);
+                return (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700 whitespace-nowrap">
+                      {user.email}
+                    </td>
+                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700 whitespace-nowrap">
+                      {user.role || "user"}
+                    </td>
+                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700">
+                      {editing ? (
+                        <select
+                          value={roleEdits[user.id]}
+                          onChange={(e) => changeRole(user.id, e.target.value)}
+                          className="border border-gray-300 rounded px-2 py-1 text-xs md:text-sm"
+                        >
+                          {availableRoles.map((role) => (
+                            <option key={role} value={role}>
+                              {role.charAt(0).toUpperCase() + role.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <button
+                          onClick={() => initiateRoleEdit(user.id)}
+                          className="flex items-center space-x-1 text-blue-600 hover:underline"
+                          title="Change Role"
+                        >
+                          <Pencil size={14} />
+                          <span>Change Role</span>
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700 whitespace-nowrap">
+                      {editing && (
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => submitRoleChange(user.id)}
+                            disabled={isLoading(user.id)}
+                            className="flex items-center space-x-1 text-green-600 hover:text-green-800 disabled:opacity-50"
+                            title="Submit Role Change"
+                          >
+                            <Check size={16} />
+                            <span>Submit</span>
+                          </button>
+                          <button
+                            onClick={() => cancelRoleEdit(user.id)}
+                            className="flex items-center space-x-1 text-red-600 hover:text-red-800"
+                            title="Cancel Role Change"
+                          >
+                            <X size={16} />
+                            <span>Cancel</span>
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
