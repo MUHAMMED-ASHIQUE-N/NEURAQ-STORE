@@ -3,16 +3,16 @@ import { Cpu, ShieldCheck, LogOut } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
-  active: boolean; // active nav module indicator
-  onSelect: () => void; // handler to select the module
-  userEmail?: string; // logged in user email
-  onLogout: () => void; // logout handler
-  sidebarOpen: boolean; // sidebar visibility state (mobile/md)
-  toggleSidebar: () => void; // toggle sidebar visibility handler
+  activeNav: "products" | "notifications"; // navigation key
+  onSelect: (nav: "products" | "notifications") => void;
+  userEmail?: string;
+  onLogout: () => void;
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
 };
 
 export default function SoftwareSidebar({
-  active,
+  activeNav,
   onSelect,
   userEmail,
   onLogout,
@@ -22,15 +22,6 @@ export default function SoftwareSidebar({
   const { user } = useUser();
   return (
     <>
-      {/* Overlay to cover screen when sidebar is open on mobile/md */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-        onClick={toggleSidebar}
-        aria-hidden="true"
-      ></div>
-
       <aside
         className={`
           fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-md
@@ -42,7 +33,7 @@ export default function SoftwareSidebar({
         `}
         aria-label="Software Sidebar"
       >
-        {/* Mobile & Medium header with close button */}
+        {/* Mobile/MD header with close button */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button
@@ -67,25 +58,19 @@ export default function SoftwareSidebar({
           </button>
         </div>
 
-        {/* Navigation modules */}
+        {/* Navigation links */}
         <nav className="flex-grow px-4 py-6 overflow-y-auto space-y-3">
-          {/* Software Products Nav */}
-          <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-            <ShieldCheck size={36} className="text-indigo-600" />
-            <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-700 to-pink-600">
-              Admin Dashboard
-            </h1>
-          </div>
+          {/* Software Products */}
           <button
             onClick={() => {
-              onSelect();
-              toggleSidebar(); // close sidebar on mobile/md after click
+              onSelect("products");
+              toggleSidebar();
             }}
-            aria-current={active ? "page" : undefined}
+            aria-current={activeNav === "products" ? "page" : undefined}
             className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
               focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
               ${
-                active
+                activeNav === "products"
                   ? "text-white bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400"
                   : "text-gray-700 hover:bg-indigo-100"
               }
@@ -95,10 +80,28 @@ export default function SoftwareSidebar({
             <span>Software Products</span>
           </button>
 
-          {/* Placeholder for additional nav item */}
+          {/* Notifications */}
+          <button
+            onClick={() => {
+              onSelect("notifications");
+              toggleSidebar();
+            }}
+            aria-current={activeNav === "notifications" ? "page" : undefined}
+            className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
+              focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
+              ${
+                activeNav === "notifications"
+                  ? "text-white bg-gradient-to-r from-purple-600 via-pink-600 to-red-600"
+                  : "text-gray-700 hover:bg-indigo-100"
+              }
+            `}
+          >
+            <ShieldCheck size={20} />
+            <span>Notifications</span>
+          </button>
         </nav>
 
-        {/* Logged-in Email and Logout button fixed at bottom */}
+        {/* User Info and Logout button */}
         <div className="sticky bottom-0 px-4 py-4 border-t border-gray-200 bg-white">
           <div className="text-gray-700 mb-2 break-words">
             Logged in as: <strong>{user.email ?? "Guest"}</strong>

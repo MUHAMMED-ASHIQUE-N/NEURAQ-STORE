@@ -6,6 +6,8 @@ import {
   onSnapshot,
   doc,
   updateDoc,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { CheckCircle2, XCircle, Pencil, Check, X } from "lucide-react";
@@ -46,114 +48,139 @@ export default function MainAdminApprovals() {
 
   // Fetch pending products from all 3 collections
   useEffect(() => {
-    const subs = [];
+    const subscriptions: Array<() => void> = [];
 
-    // Helper: fetch pending docs from a collection, map to unified product and listen
-    function fetchPendingProductsFromCollection(
-      collectionName: Product["collectionName"]
-    ) {
+    function listenForPending(collectionName: Product["collectionName"]) {
       const q = query(
         collection(firestore, collectionName),
         where("approved", "==", false),
         where("rejected", "==", false)
       );
       return onSnapshot(q, (snapshot) => {
-        const prods: Product[] = [];
-        snapshot.forEach((docSnap) => {
-          prods.push({
-            id: docSnap.id,
+        const rows: Product[] = [];
+        snapshot.forEach((ds) => {
+          rows.push({
+            id: ds.id,
             collectionName,
-            ...(docSnap.data() as Omit<Product, "id" | "collectionName">),
+            ...(ds.data() as Omit<Product, "id" | "collectionName">),
           });
         });
         setProducts((prev) => {
-          // Remove old products from this collection and add updated ones
-          const rest = prev.filter((p) => p.collectionName !== collectionName);
-          return [...rest, ...prods];
+          // Remove older results for this collection
+          const others = prev.filter(
+            (p) => p.collectionName !== collectionName
+          );
+          return [...others, ...rows];
         });
       });
     }
 
-    subs.push(fetchPendingProductsFromCollection("amazonProducts"));
-    subs.push(fetchPendingProductsFromCollection("localProducts"));
-    subs.push(fetchPendingProductsFromCollection("softwareProducts"));
+    subscriptions.push(listenForPending("amazonProducts"));
+    subscriptions.push(listenForPending("localProducts"));
+    subscriptions.push(listenForPending("softwareProducts"));
 
-    return () => {
-      subs.forEach((unsub) => unsub());
-    };
+    return () => subscriptions.forEach((unsub) => unsub());
   }, []);
 
-  // Fetch users collection
+  // Fetch all users
   useEffect(() => {
-    const q = collection(firestore, "users");
-    const unsub = onSnapshot(q, (snapshot) => {
-      const loadedUsers: User[] = [];
-      snapshot.forEach((doc) => {
-        loadedUsers.push({ id: doc.id, ...(doc.data() as User) });
-      });
-      setUsers(loadedUsers);
+    const unsub = onSnapshot(collection(firestore, "users"), (snapshot) => {
+      const loaded: User[] = [];
+      snapshot.forEach((doc) =>
+        loaded.push({ id: doc.id, ...(doc.data() as User) })
+      );
+      setUsers(loaded);
     });
     return () => unsub();
   }, []);
 
-  // Handle approve product: set approved = true
+  // ----- Product Approvals: Approve/Reject Handlers -----
   async function approveProduct(product: Product) {
     setLoadingActionIds((ids) => [...ids, product.id]);
     try {
-      const ref = doc(firestore, product.collectionName, product.id);
-      await updateDoc(ref, { approved: true, rejected: false });
-      // Automatically removed from pending due to query filter
+      await updateDoc(doc(firestore, product.collectionName, product.id), {
+        approved: true,
+        rejected: false,
+      });
+      // Write notification
+      let notifCollection = "";
+      if (product.collectionName === "amazonProducts")
+        notifCollection = "amazonProductsNotification";
+      if (product.collectionName === "localProducts")
+        notifCollection = "localProductsNotification";
+      if (product.collectionName === "softwareProducts")
+        notifCollection = "softwareProductsNotification";
+      await addDoc(collection(firestore, notifCollection), {
+        name: product.name,
+        productId: product.id,
+        status: "approved",
+        timestamp: serverTimestamp(),
+      });
     } catch (e) {
-      alert("Failed to approve product: " + (e as Error).message);
+      alert("Failed to approve: " + (e as Error).message);
     } finally {
       setLoadingActionIds((ids) => ids.filter((id) => id !== product.id));
     }
   }
 
-  // Handle reject product: set rejected = true
   async function rejectProduct(product: Product) {
     setLoadingActionIds((ids) => [...ids, product.id]);
     try {
-      const ref = doc(firestore, product.collectionName, product.id);
-      await updateDoc(ref, { rejected: true, approved: false });
-      // Automatically removed from pending due to query filter
+      await updateDoc(doc(firestore, product.collectionName, product.id), {
+        rejected: true,
+        approved: false,
+      });
+      // Write notification
+      let notifCollection = "";
+      if (product.collectionName === "amazonProducts")
+        notifCollection = "amazonProductsNotification";
+      if (product.collectionName === "localProducts")
+        notifCollection = "localProductsNotification";
+      if (product.collectionName === "softwareProducts")
+        notifCollection = "softwareProductsNotification";
+      await addDoc(collection(firestore, notifCollection), {
+        name: product.name,
+        productId: product.id,
+        status: "rejected",
+        timestamp: serverTimestamp(),
+      });
     } catch (e) {
-      alert("Failed to reject product: " + (e as Error).message);
+      alert("Failed to reject: " + (e as Error).message);
     } finally {
       setLoadingActionIds((ids) => ids.filter((id) => id !== product.id));
     }
   }
 
-  // Handle initiating role edit for a user
-  function initiateRoleEdit(userId: string) {
-    setRoleEdits((prev) => ({
-      ...prev,
-      [userId]: users.find((u) => u.id === userId)?.role || "user",
+  // ----- Role Editing -----
+  function startRoleEdit(userId: string) {
+    setRoleEdits((edits) => ({
+      ...edits,
+      [userId]: users.find((u) => u.id === userId)?.role ?? "user",
     }));
   }
 
-  // Handle change role selection
-  function changeRole(userId: string, role: string) {
-    setRoleEdits((prev) => ({ ...prev, [userId]: role }));
+  function selectRole(userId: string, role: string) {
+    setRoleEdits((edits) => ({
+      ...edits,
+      [userId]: role,
+    }));
   }
 
-  // Cancel role editing for a user
   function cancelRoleEdit(userId: string) {
-    setRoleEdits((prev) => {
-      const copy = { ...prev };
+    setRoleEdits((edits) => {
+      const copy = { ...edits };
       delete copy[userId];
       return copy;
     });
   }
 
-  // Submit role change to Firestore
-  async function submitRoleChange(userId: string) {
+  async function submitRoleEdit(userId: string) {
     if (!roleEdits[userId]) return;
     setLoadingActionIds((ids) => [...ids, userId]);
     try {
-      const ref = doc(firestore, "users", userId);
-      await updateDoc(ref, { role: roleEdits[userId] });
-      // Clear edit state
+      await updateDoc(doc(firestore, "users", userId), {
+        role: roleEdits[userId],
+      });
       cancelRoleEdit(userId);
     } catch (e) {
       alert("Failed to update user role: " + (e as Error).message);
@@ -189,7 +216,7 @@ export default function MainAdminApprovals() {
               <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[100px]">
                 Final Price
               </th>
-              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
+              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
                 Created By
               </th>
               <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
@@ -267,10 +294,10 @@ export default function MainAdminApprovals() {
               <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
                 User
               </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
                 Current Role
               </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[220px]">
+              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
                 Change Role
               </th>
               <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
@@ -303,7 +330,7 @@ export default function MainAdminApprovals() {
                       {editing ? (
                         <select
                           value={roleEdits[user.id]}
-                          onChange={(e) => changeRole(user.id, e.target.value)}
+                          onChange={(e) => selectRole(user.id, e.target.value)}
                           className="border border-gray-300 rounded px-2 py-1 text-xs md:text-sm"
                         >
                           {availableRoles.map((role) => (
@@ -314,7 +341,7 @@ export default function MainAdminApprovals() {
                         </select>
                       ) : (
                         <button
-                          onClick={() => initiateRoleEdit(user.id)}
+                          onClick={() => startRoleEdit(user.id)}
                           className="flex items-center space-x-1 text-blue-600 hover:underline"
                           title="Change Role"
                         >
@@ -327,7 +354,7 @@ export default function MainAdminApprovals() {
                       {editing && (
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => submitRoleChange(user.id)}
+                            onClick={() => submitRoleEdit(user.id)}
                             disabled={isLoading(user.id)}
                             className="flex items-center space-x-1 text-green-600 hover:text-green-800 disabled:opacity-50"
                             title="Submit Role Change"

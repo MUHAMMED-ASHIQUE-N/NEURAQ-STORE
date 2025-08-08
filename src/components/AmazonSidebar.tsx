@@ -3,34 +3,25 @@ import { ShoppingCart, ShieldCheck, LogOut } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
-  active: boolean; // whether the (only) Amazon module is active
-  onSelect: () => void; // function to activate Amazon module (click nav)
-  userEmail?: string; // logged in user's email
-  onLogout: () => void; // logout handler
-  sidebarOpen: boolean; // sidebar open state on mobile/md
-  toggleSidebar: () => void; // toggles sidebar
+  activeNav: "products" | "notifications";
+  onSelect: (nav: "products" | "notifications") => void;
+  userEmail?: string;
+  onLogout: () => void;
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
 };
 
-const AmazonSidebar: React.FC<SidebarProps> = ({
-  active,
+export default function AmazonSidebar({
+  activeNav,
   onSelect,
   userEmail,
   onLogout,
   sidebarOpen,
   toggleSidebar,
-}) => {
+}: SidebarProps) {
   const { user } = useUser();
   return (
     <>
-      {/* Overlay for mobile/md screens */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-        onClick={toggleSidebar}
-        aria-hidden="true"
-      ></div>
-
       <aside
         className={`
           fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-md
@@ -42,7 +33,7 @@ const AmazonSidebar: React.FC<SidebarProps> = ({
         `}
         aria-label="Amazon Sidebar"
       >
-        {/* Mobile & Medium Header with Close button */}
+        {/* Mobile header with close button */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button
@@ -50,7 +41,6 @@ const AmazonSidebar: React.FC<SidebarProps> = ({
             className="text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
             aria-label="Close sidebar"
           >
-            {/* Close icon */}
             <svg
               className="h-6 w-6"
               stroke="currentColor"
@@ -66,19 +56,18 @@ const AmazonSidebar: React.FC<SidebarProps> = ({
             </svg>
           </button>
         </div>
-
-        {/* Nav Link for Amazon Products */}
-        <nav className="flex-grow px-4 py-6">
+        <nav className="flex-grow px-4 py-6 space-y-3 overflow-y-auto">
+          {/* Amazon Products Nav */}
           <button
             onClick={() => {
-              onSelect();
+              onSelect("products");
               toggleSidebar();
             }}
-            aria-current={active ? "page" : undefined}
+            aria-current={activeNav === "products" ? "page" : undefined}
             className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
               focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
               ${
-                active
+                activeNav === "products"
                   ? "bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 text-white"
                   : "text-gray-700 hover:bg-indigo-100"
               }
@@ -87,9 +76,27 @@ const AmazonSidebar: React.FC<SidebarProps> = ({
             <ShoppingCart size={20} />
             <span>Amazon Products</span>
           </button>
+          {/* Notifications Nav */}
+          <button
+            onClick={() => {
+              onSelect("notifications");
+              toggleSidebar();
+            }}
+            aria-current={activeNav === "notifications" ? "page" : undefined}
+            className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
+              focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
+              ${
+                activeNav === "notifications"
+                  ? "bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500 text-white"
+                  : "text-gray-700 hover:bg-indigo-100"
+              }
+            `}
+          >
+            <ShieldCheck size={20} />
+            <span>Notifications</span>
+          </button>
         </nav>
-
-        {/* User info and Logout placed at bottom */}
+        {/* User info and logout at bottom */}
         <div className="sticky bottom-0 px-4 py-4 border-t border-gray-200 bg-white">
           <div className="text-gray-700 mb-2 break-words">
             Logged in as: <strong>{user.email ?? "Guest"}</strong>
@@ -105,6 +112,4 @@ const AmazonSidebar: React.FC<SidebarProps> = ({
       </aside>
     </>
   );
-};
-
-export default AmazonSidebar;
+}

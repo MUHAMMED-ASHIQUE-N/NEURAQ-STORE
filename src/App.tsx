@@ -10,6 +10,8 @@ import MainAdminApprovals from "./components/MainAdminApprovals";
 import AmazonAdminDashboard from "./pages/AmazonAdminDashboard";
 import LocalAdminDashboard from "./pages/LocalAdminDashboard";
 import SoftwareAdminDashboard from "./pages/SoftwareAdminDashboard";
+import AmazonProductsNotificationPage from "./components/AmazonProductsNotificationPage";
+import LocalProductsNotificationPage from "./components/LocalProductsNotificationPage";
 
 export default function App() {
   return (

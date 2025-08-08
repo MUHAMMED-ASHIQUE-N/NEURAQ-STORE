@@ -3,16 +3,16 @@ import { Package, ShieldCheck, LogOut } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
-  active: boolean; // which module is active, here likely only one
-  onSelect: () => void; // function to activate the module
-  userEmail?: string; // logged in user's email
-  onLogout: () => void; // logout function
-  sidebarOpen: boolean; // sidebar visibility on mobile/md
-  toggleSidebar: () => void; // toggle function to show/hide sidebar
+  activeNav: "local" | "notifications"; // track active nav module
+  onSelect: (nav: "local" | "notifications") => void;
+  userEmail?: string;
+  onLogout: () => void;
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
 };
 
-export default function Sidebar({
-  active,
+export default function LocalSidebar({
+  activeNav,
   onSelect,
   userEmail,
   onLogout,
@@ -22,15 +22,7 @@ export default function Sidebar({
   const { user } = useUser();
   return (
     <>
-      {/* Overlay behind sidebar on mobile/md when open */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-        onClick={toggleSidebar}
-        aria-hidden="true"
-      ></div>
-
+      {/* Sidebar container with slide-in/out on mobile/md */}
       <aside
         className={`
           fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-md
@@ -42,7 +34,7 @@ export default function Sidebar({
         `}
         aria-label="Local Sidebar"
       >
-        {/* Mobile/Medium header with close button */}
+        {/* Mobile/medium header with close button */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button
@@ -50,7 +42,7 @@ export default function Sidebar({
             className="text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
             aria-label="Close sidebar"
           >
-            {/* Close icon */}
+            {/* Close icon (X) */}
             <svg
               className="h-6 w-6"
               stroke="currentColor"
@@ -67,24 +59,18 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Navigation (single or multiple if you want) */}
+        {/* Navigation modules */}
         <nav className="flex-grow px-4 py-6 overflow-y-auto space-y-3">
-          <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-            <ShieldCheck size={36} className="text-indigo-600" />
-            <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-700 to-pink-600">
-              Admin Dashboard
-            </h1>
-          </div>
           <button
             onClick={() => {
-              onSelect();
-              toggleSidebar(); // close on mobile/md after click
+              onSelect("local");
+              toggleSidebar();
             }}
-            aria-current={active ? "page" : undefined}
+            aria-current={activeNav === "local" ? "page" : undefined}
             className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
               focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
               ${
-                active
+                activeNav === "local"
                   ? "text-white bg-gradient-to-r from-yellow-400 via-red-400 to-pink-400"
                   : "text-gray-700 hover:bg-indigo-100"
               }
@@ -94,10 +80,27 @@ export default function Sidebar({
             <span>Local Products</span>
           </button>
 
-          {/* If you want, add other nav items here with similar pattern */}
+          <button
+            onClick={() => {
+              onSelect("notifications");
+              toggleSidebar();
+            }}
+            aria-current={activeNav === "notifications" ? "page" : undefined}
+            className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
+              focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
+              ${
+                activeNav === "notifications"
+                  ? "text-white bg-gradient-to-r from-purple-600 via-pink-600 to-red-600"
+                  : "text-gray-700 hover:bg-indigo-100"
+              }
+            `}
+          >
+            <ShieldCheck size={20} />
+            <span>Notifications</span>
+          </button>
         </nav>
 
-        {/* User info and logout at bottom */}
+        {/* User info and logout fixed at bottom */}
         <div className="sticky bottom-0 px-4 py-4 border-t border-gray-200 bg-white">
           <div className="text-gray-700 mb-2 break-words">
             Logged in as: <strong>{user.email ?? "Guest"}</strong>
