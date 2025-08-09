@@ -1,10 +1,10 @@
 import React from "react";
-import { Package, ShieldCheck, LogOut } from "lucide-react";
+import { Package, ShieldCheck, ClipboardCheck, LogOut } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
-  activeNav: "local" | "notifications"; // track active nav module
-  onSelect: (nav: "local" | "notifications") => void;
+  activeNav: "local" | "notifications" | "approvals";
+  onSelect: (nav: "local" | "notifications" | "approvals") => void;
   userEmail?: string;
   onLogout: () => void;
   sidebarOpen: boolean;
@@ -20,21 +20,17 @@ export default function LocalSidebar({
   toggleSidebar,
 }: SidebarProps) {
   const { user } = useUser();
+
   return (
     <>
-      {/* Sidebar container with slide-in/out on mobile/md */}
       <aside
-        className={`
-          fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-md
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:inset-auto
-          flex flex-col h-full
-        `}
-        aria-label="Local Sidebar"
+        className={`fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-md
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        lg:translate-x-0 lg:static lg:inset-auto
+        flex flex-col h-full`}
       >
-        {/* Mobile/medium header with close button */}
+        {/* Mobile header with close btn */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button
@@ -42,7 +38,6 @@ export default function LocalSidebar({
             className="text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
             aria-label="Close sidebar"
           >
-            {/* Close icon (X) */}
             <svg
               className="h-6 w-6"
               stroke="currentColor"
@@ -59,8 +54,9 @@ export default function LocalSidebar({
           </button>
         </div>
 
-        {/* Navigation modules */}
+        {/* Navigation */}
         <nav className="flex-grow px-4 py-6 overflow-y-auto space-y-3">
+          {/* Local Products */}
           <button
             onClick={() => {
               onSelect("local");
@@ -73,13 +69,13 @@ export default function LocalSidebar({
                 activeNav === "local"
                   ? "text-white bg-gradient-to-r from-yellow-400 via-red-400 to-pink-400"
                   : "text-gray-700 hover:bg-indigo-100"
-              }
-            `}
+              }`}
           >
             <Package size={20} />
             <span>Local Products</span>
           </button>
 
+          {/* Notifications */}
           <button
             onClick={() => {
               onSelect("notifications");
@@ -92,15 +88,33 @@ export default function LocalSidebar({
                 activeNav === "notifications"
                   ? "text-white bg-gradient-to-r from-purple-600 via-pink-600 to-red-600"
                   : "text-gray-700 hover:bg-indigo-100"
-              }
-            `}
+              }`}
           >
             <ShieldCheck size={20} />
             <span>Notifications</span>
           </button>
+
+          {/* Pending Approvals */}
+          <button
+            onClick={() => {
+              onSelect("approvals");
+              toggleSidebar();
+            }}
+            aria-current={activeNav === "approvals" ? "page" : undefined}
+            className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
+              focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
+              ${
+                activeNav === "approvals"
+                  ? "bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-500 text-white"
+                  : "text-gray-700 hover:bg-indigo-100"
+              }`}
+          >
+            <ClipboardCheck size={20} />
+            <span>Create Admin</span>
+          </button>
         </nav>
 
-        {/* User info and logout fixed at bottom */}
+        {/* User + logout */}
         <div className="sticky bottom-0 px-4 py-4 border-t border-gray-200 bg-white">
           <div className="text-gray-700 mb-2 break-words">
             Logged in as: <strong>{user.email ?? "Guest"}</strong>

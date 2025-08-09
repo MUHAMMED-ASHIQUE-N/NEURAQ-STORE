@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AmazonSidebar from "../components/AmazonSidebar";
 import AmazonProducts from "./AmazonProducts";
 import AmazonProductsNotificationPage from "../components/AmazonProductsNotificationPage";
+import AmazonSemiAdminApprovalsPage from "../components/CreateAmazonSemiAdmin";
 import { useUser } from "../contexts/UserContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
@@ -11,12 +12,12 @@ export default function AmazonAdminDashboard() {
   const user = useUser();
   const navigate = useNavigate();
 
-  // Which module is active: "products" or "notifications"
-  const [activeNav, setActiveNav] = useState<"products" | "notifications">(
-    "products"
-  );
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Active navigation: products, notifications, or approvals
+  const [activeNav, setActiveNav] = useState<
+    "products" | "notifications" | "approvals"
+  >("products");
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   const handleLogout = async () => {
@@ -26,7 +27,7 @@ export default function AmazonAdminDashboard() {
 
   return (
     <div className="min-h-screen flex bg-gray-100">
-      {/* Overlay for sidebar on small/medium screens */}
+      {/* Overlay for mobile screen */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ${
           sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
@@ -35,27 +36,24 @@ export default function AmazonAdminDashboard() {
         aria-hidden="true"
       ></div>
 
-      {/* Responsive Sidebar */}
+      {/* Sidebar */}
       <AmazonSidebar
         activeNav={activeNav}
-        onSelect={(nav) => {
-          setActiveNav(nav);
-          setSidebarOpen(false);
-        }}
+        onSelect={setActiveNav}
         userEmail={user?.email}
         onLogout={handleLogout}
         sidebarOpen={sidebarOpen}
         toggleSidebar={toggleSidebar}
       />
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Responsive header with hamburger */}
+        {/* Mobile/medium header */}
         <header className="bg-white shadow lg:hidden flex items-center justify-between px-4 h-14">
           <button
             onClick={toggleSidebar}
-            className="text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
             aria-label="Toggle sidebar"
+            className="text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
           >
             {/* Hamburger icon */}
             <svg
@@ -75,12 +73,13 @@ export default function AmazonAdminDashboard() {
           <h1 className="text-lg font-semibold text-gray-900">
             Amazon Admin Dashboard
           </h1>
-          <div className="w-6" /> {/* spacer for symmetry */}
+          <div className="w-6" />
         </header>
 
         <main className="flex-grow overflow-auto p-4">
           {activeNav === "products" && <AmazonProducts />}
           {activeNav === "notifications" && <AmazonProductsNotificationPage />}
+          {activeNav === "approvals" && <AmazonSemiAdminApprovalsPage />}
         </main>
       </div>
     </div>

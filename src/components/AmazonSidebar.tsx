@@ -1,10 +1,15 @@
 import React from "react";
-import { ShoppingCart, ShieldCheck, LogOut } from "lucide-react";
+import {
+  ShoppingCart,
+  ShieldCheck,
+  ClipboardCheck,
+  LogOut,
+} from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
-  activeNav: "products" | "notifications";
-  onSelect: (nav: "products" | "notifications") => void;
+  activeNav: "products" | "notifications" | "approvals";
+  onSelect: (nav: "products" | "notifications" | "approvals") => void;
   userEmail?: string;
   onLogout: () => void;
   sidebarOpen: boolean;
@@ -19,7 +24,8 @@ export default function AmazonSidebar({
   sidebarOpen,
   toggleSidebar,
 }: SidebarProps) {
-  const { user } = useUser();
+  const { user } = useUser(); // If needed, but using userEmail directly
+
   return (
     <>
       <aside
@@ -27,13 +33,11 @@ export default function AmazonSidebar({
           fixed z-50 inset-y-0 left-0 w-64 bg-white shadow-md
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:static lg:inset-auto
           flex flex-col h-full
         `}
-        aria-label="Amazon Sidebar"
       >
-        {/* Mobile header with close button */}
+        {/* Mobile close header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button
@@ -56,8 +60,10 @@ export default function AmazonSidebar({
             </svg>
           </button>
         </div>
-        <nav className="flex-grow px-4 py-6 space-y-3 overflow-y-auto">
-          {/* Amazon Products Nav */}
+
+        {/* Navigation */}
+        <nav className="flex-grow px-4 py-6 overflow-y-auto space-y-3">
+          {/* Products */}
           <button
             onClick={() => {
               onSelect("products");
@@ -76,7 +82,8 @@ export default function AmazonSidebar({
             <ShoppingCart size={20} />
             <span>Amazon Products</span>
           </button>
-          {/* Notifications Nav */}
+
+          {/* Notifications */}
           <button
             onClick={() => {
               onSelect("notifications");
@@ -95,8 +102,29 @@ export default function AmazonSidebar({
             <ShieldCheck size={20} />
             <span>Notifications</span>
           </button>
+
+          {/* Pending Approvals */}
+          <button
+            onClick={() => {
+              onSelect("approvals");
+              toggleSidebar();
+            }}
+            aria-current={activeNav === "approvals" ? "page" : undefined}
+            className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
+              focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
+              ${
+                activeNav === "approvals"
+                  ? "bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-500 text-white"
+                  : "text-gray-700 hover:bg-indigo-100"
+              }
+            `}
+          >
+            <ClipboardCheck size={20} />
+            <span>Create Admin</span>
+          </button>
         </nav>
-        {/* User info and logout at bottom */}
+
+        {/* User info + logout */}
         <div className="sticky bottom-0 px-4 py-4 border-t border-gray-200 bg-white">
           <div className="text-gray-700 mb-2 break-words">
             Logged in as: <strong>{user.email ?? "Guest"}</strong>

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import SoftwareSidebar from "../components/SoftwareSidebar";
 import SoftwareProducts from "./SoftwareProducts";
-import SoftwareProductsNotificationPage from "../components/SoftwareProductsNotificationPage"; // import Notifications page
+import SoftwareProductsNotificationPage from "../components/SoftwareProductsNotificationPage";
+import SoftwareSemiAdminApprovalsPage from "../components/CreateSoftwareSemiAdmin"; // NEW
 import { useUser } from "../contexts/UserContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
@@ -11,14 +12,12 @@ export default function SoftwareAdminDashboard() {
   const user = useUser();
   const navigate = useNavigate();
 
-  // Track active navigation: "products" or "notifications"
-  const [activeNav, setActiveNav] = useState<"products" | "notifications">(
-    "products"
-  );
+  // Now includes approvals
+  const [activeNav, setActiveNav] = useState<
+    "products" | "notifications" | "approvals"
+  >("products");
 
-  // Sidebar open state for mobile and md
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   const handleLogout = async () => {
@@ -28,14 +27,14 @@ export default function SoftwareAdminDashboard() {
 
   return (
     <div className="min-h-screen flex bg-gray-100">
-      {/* Overlay appearing behind sidebar on mobile and md */}
+      {/* Overlay for sidebar on small/medium screens */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ${
           sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={toggleSidebar}
         aria-hidden="true"
-      />
+      ></div>
 
       {/* Sidebar */}
       <SoftwareSidebar
@@ -47,9 +46,9 @@ export default function SoftwareAdminDashboard() {
         toggleSidebar={toggleSidebar}
       />
 
-      {/* Main content */}
+      {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Header with hamburger for mobile/md */}
+        {/* Header with hamburger icon for mobile */}
         <header className="bg-white shadow lg:hidden flex items-center justify-between px-4 h-14">
           <button
             onClick={toggleSidebar}
@@ -82,6 +81,7 @@ export default function SoftwareAdminDashboard() {
           {activeNav === "notifications" && (
             <SoftwareProductsNotificationPage />
           )}
+          {activeNav === "approvals" && <SoftwareSemiAdminApprovalsPage />}
         </main>
       </div>
     </div>

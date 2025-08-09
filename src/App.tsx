@@ -10,8 +10,9 @@ import MainAdminApprovals from "./components/MainAdminApprovals";
 import AmazonAdminDashboard from "./pages/AmazonAdminDashboard";
 import LocalAdminDashboard from "./pages/LocalAdminDashboard";
 import SoftwareAdminDashboard from "./pages/SoftwareAdminDashboard";
-import AmazonProductsNotificationPage from "./components/AmazonProductsNotificationPage";
-import LocalProductsNotificationPage from "./components/LocalProductsNotificationPage";
+import AmazonSemiAdminApprovalsPage from "./components/CreateAmazonSemiAdmin";
+import LocalSemiAdminApprovalsPage from "./components/CreateLocalSemiAdmin";
+import SoftwareSemiAdminApprovalsPage from "./components/CreateSoftwareSemiAdmin";
 
 export default function App() {
   return (
@@ -21,6 +22,19 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route
+          path="/amazon/approvals"
+          element={<AmazonSemiAdminApprovalsPage />}
+        />
+        <Route
+          path="/local/approvals"
+          element={<LocalSemiAdminApprovalsPage />}
+        />
+
+        <Route
+          path="/software/approvals"
+          element={<SoftwareSemiAdminApprovalsPage />}
+        />
         <Route
           path="/admin/dashboard"
           element={

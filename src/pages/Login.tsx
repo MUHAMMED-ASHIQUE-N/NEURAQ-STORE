@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth, firestore } from "../firebase";
+import { LogIn, XCircle } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,7 +11,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // 1. Authenticate user with Firebase Auth
+      // Sign in with Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -26,22 +26,15 @@ export default function Login() {
       );
       const user = userCredential.user;
 
-      // 2. Fetch user role from Firestore
-      const userDocRef = doc(firestore, "users", user.uid);
-      const userSnap = await getDoc(userDocRef);
-
-      if (!userSnap.exists()) {
-        setError("User profile not found.");
-        setLoading(false);
-        return;
+      // Get user role from Firestore
+      const userDoc = await getDoc(doc(firestore, "users", user.uid));
+      if (!userDoc.exists()) {
+        throw new Error("User record not found in database");
       }
+      const role = userDoc.data().role;
 
-      const userData = userSnap.data();
-      const role = userData.role || "basic-user";
-
-      // 3. Determine redirect path based on role
-      let redirectPath = "/login"; // fallback
-
+      // Determine redirect path by role
+      let redirectPath = "/unauthorized";
       switch (role) {
         case "main-admin":
           redirectPath = "/admin/dashboard";
@@ -56,64 +49,103 @@ export default function Login() {
           redirectPath = "/admin/software-products";
           break;
         default:
-          // Could redirect to a "No access" or "Unauthorized" page or show an error
           redirectPath = "/unauthorized";
           break;
       }
 
-      // 4. Redirect user to role-based page
-      navigate(redirectPath, { replace: true });
-    } catch (err: any) {
-      setError(err.message || "Failed to login");
+      navigate(redirectPath);
+    } catch (error: any) {
+      setError(error.message || "Login failed");
+    } finally {
       setLoading(false);
     }
   }
 
+  function handleCancel() {
+    setEmail("");
+    setPassword("");
+    setError("");
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-6 rounded shadow-md w-full max-w-md"
-      >
-        <h2 className="text-xl font-bold mb-4 text-center">Login</h2>
-
-        {error && <div className="text-red-600 mb-4 text-center">{error}</div>}
-
-        <label className="block mb-2 font-medium">Email</label>
-        <input
-          type="email"
-          value={email}
-          required
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 p-2 border rounded"
-          autoComplete="username"
-        />
-
-        <label className="block mb-2 font-medium">Password</label>
-        <input
-          type="password"
-          value={password}
-          required
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-6 p-2 border rounded"
-          autoComplete="current-password"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-60"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-
-        <p className="mt-4 text-center text-sm">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg py-8 px-6 md:px-8">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-center mb-2">
+          Login
+        </h2>
+        <p className="text-gray-600 text-center mb-6 text-sm md:text-base">
           Don't have an account?{" "}
-          <Link to="/register" className="text-indigo-600 hover:underline">
-            Register here
+          <Link to="/register" className="text-blue-600 hover:underline">
+            Register
           </Link>
         </p>
-      </form>
+        {error && (
+          <div className="mb-4 p-3 text-red-700 bg-red-100 border border-red-200 rounded text-center text-sm">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Email */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm md:text-base font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              disabled={loading}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+            />
+          </div>
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm md:text-base font-medium text-gray-700 mb-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              disabled={loading}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+            />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0 mt-4">
+            {/* Submit/Login button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded shadow transition disabled:opacity-50"
+            >
+              <LogIn size={20} />
+              {loading ? "Logging in..." : "Login"}
+            </button>
+
+            {/* Cancel/Reset button */}
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="w-full flex items-center justify-center gap-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-4 py-2 rounded shadow transition"
+            >
+              <XCircle size={20} />
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
