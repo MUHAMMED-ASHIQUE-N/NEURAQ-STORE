@@ -15,152 +15,147 @@ export default function LocalProductCard({
   onEdit: (product: any) => void;
   onDelete: (id: string) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   return (
-    <div
-      className={`
-        w-full sm:w-72 h-72 bg-white rounded-xl border shadow transition-all duration-300
-        hover:shadow-xl hover:scale-105 hover:-translate-y-1
-        flex flex-col justify-between overflow-hidden relative
-      `}
-      style={{ aspectRatio: "1 / 1", minWidth: "16rem", minHeight: "16rem" }}
-    >
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
-        {/* Product Image */}
-        <div className="w-28 h-28 flex-shrink-0 flex items-center justify-center mb-2">
-          {product.images && product.images[0] ? (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="w-full h-full object-cover rounded-md border"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
-              No Image
-            </div>
-          )}
-        </div>
+    <>
+      {/* Card */}
+      <div
+        className="bg-white rounded-lg shadow-lg p-4 flex flex-col justify-between 
+        transition-all duration-300 hover:shadow-xl hover:scale-105 hover:-translate-y-1"
+      >
+        {/* Image with fallback */}
+        {product.images ? (
+          <img
+            src={product.images}
+            alt={product.name}
+            className="w-full object-contain rounded mb-3"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/no-image.png"; // placeholder path
+            }}
+          />
+        ) : null}
 
-        {/* Product Name */}
-        <div className="text-lg font-bold text-center truncate w-full mb-0.5">
-          {product.name}
-        </div>
+        {/* Name */}
+        <h6 className="text-lg font-semibold truncate">{product.name}</h6>
 
-        {/* Final Price */}
-        <div className="mt-1 text-yellow-700 text-xl font-semibold">
-          {formatPrice(product.finalPrice)}
+        {/* Price */}
+        {product.finalPrice !== undefined && (
+          <p className="text-gray-800 font-medium">
+            {formatPrice(product.finalPrice)}
+          </p>
+        )}
+
+        {/* Buttons */}
+        <div className="flex space-x-3 mt-3">
+          <button
+            onClick={() => onEdit(product)}
+            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+            title="Edit"
+          >
+            <PenSquare size={16} />
+            <span>Edit</span>
+          </button>
+          <button
+            onClick={() => onDelete(product.id)}
+            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-red-100 text-red-800 hover:bg-red-200"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+            <span>Delete</span>
+          </button>
+          <button
+            onClick={() => setShowPopup(true)}
+            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200"
+            title="View details"
+          >
+            <Eye size={16} />
+            <span>View</span>
+          </button>
         </div>
       </div>
 
-      {/* Action Buttons with lucide-react icons, gradients, hover, and transition */}
-      <div className="flex items-center justify-center gap-3 mb-2">
-        <button
-          className="flex items-center gap-1 rounded-md bg-gradient-to-r from-yellow-400 via-red-400 to-pink-400 px-3 py-1 font-semibold text-white shadow hover:from-yellow-500 hover:to-pink-500 transition"
-          onClick={() => onEdit(product)}
-          aria-label="Edit product"
-        >
-          <PenSquare size={18} />
-          Edit
-        </button>
-        <button
-          className="flex items-center gap-1 rounded-md bg-gradient-to-r from-red-600 via-pink-600 to-yellow-500 px-3 py-1 font-semibold text-white shadow hover:from-red-700 hover:to-yellow-400 transition"
-          onClick={() => onDelete(product.id)}
-          aria-label="Delete product"
-        >
-          <Trash2 size={18} />
-          Delete
-        </button>
-        <button
-          className="flex items-center gap-1 rounded-md bg-gradient-to-r from-gray-500 to-gray-700 px-3 py-1 font-semibold text-white shadow hover:from-gray-700 hover:to-gray-900 transition"
-          onClick={() => setExpanded((v) => !v)}
-          aria-label={expanded ? "Hide details" : "View details"}
-        >
-          {expanded ? <EyeOff size={18} /> : <Eye size={18} />}
-          {expanded ? "Hide" : "View"}
-        </button>
-      </div>
+      {/* Modal */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg aspect-square p-6 overflow-y-auto max-h-[90vh]">
+            {/* Close */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="text-gray-500 hover:text-gray-800"
+                title="Close"
+              >
+                <EyeOff size={20} />
+              </button>
+            </div>
 
-      {/* Expanded details overlay */}
-      {expanded && (
-        <div className="absolute top-0 left-0 z-10 flex h-full w-full flex-col overflow-auto rounded-xl bg-white/95 p-4 border">
-          <div className="absolute top-2 right-2">
-            <button
-              aria-label="Close expanded details"
-              className="rounded-full bg-gray-200 px-2 py-1 font-bold text-gray-600 shadow"
-              onClick={() => setExpanded(false)}
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-2 text-sm pt-8">
-            <div>
-              <strong>Image:</strong>{" "}
-              {product.images && product.images[0] ? (
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="my-1 h-24 w-24 rounded border object-cover"
-                />
-              ) : (
-                <span className="text-gray-400"> No Image</span>
+            {/* Full Image */}
+            {product.images ? (
+              <img
+                src={product.images}
+                alt={product.name}
+                className="w-full object-contain rounded mb-4"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/no-image.png";
+                }}
+              />
+            ) : null}
+
+            {/* Details */}
+            <h2 className="text-xl font-bold mt-4">{product.title}</h2>
+            <p className="text-gray-600">{product.name}</p>
+            {product.description && (
+              <p className="mt-2 text-sm text-gray-700">
+                {product.description}
+              </p>
+            )}
+
+            <div className="mt-4 space-y-1 text-sm">
+              <p>
+                <strong>Quantity:</strong> {product.quantity}
+              </p>
+              <p>
+                <strong>Original Price:</strong>{" "}
+                {formatPrice(product.originalPrice)}
+              </p>
+              <p>
+                <strong>Discount %:</strong> {product.discountPercent}%
+              </p>
+              <p>
+                <strong>Final Price:</strong> {formatPrice(product.finalPrice)}
+              </p>
+              <p>
+                <strong>Company Name:</strong> {product.companyName}
+              </p>
+              <p>
+                <strong>Product Category:</strong> {product.productCategory}
+              </p>
+              {product.moreAboutProduct && (
+                <p>
+                  <strong>More About Product:</strong>{" "}
+                  <a
+                    href={product.moreAboutProduct}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {product.moreAboutProduct}
+                  </a>
+                </p>
               )}
-            </div>
-            <div>
-              <strong>Title:</strong> {product.title}
-            </div>
-            <div>
-              <strong>Name:</strong> {product.name}
-            </div>
-            <div>
-              <strong>Description:</strong>{" "}
-              {product.description || (
-                <em className="text-gray-400">No description</em>
-              )}
-            </div>
-            <div>
-              <strong>Quantity:</strong> {product.quantity}
-            </div>
-            <div>
-              <strong>Original Price:</strong>{" "}
-              {formatPrice(product.originalPrice)}
-            </div>
-            <div>
-              <strong>Discount %:</strong> {product.discountPercent ?? "N/A"}%
-            </div>
-            <div>
-              <strong>Final Price:</strong> {formatPrice(product.finalPrice)}
-            </div>
-            <div>
-              <strong>Company Name:</strong> {product.companyName}
-            </div>
-            <div>
-              <strong>Product Category:</strong> {product.productCategory}
-            </div>
-            <div>
-              <strong>More Info:</strong>{" "}
-              {product.moreInfoLink ? (
-                <a
-                  href={product.moreInfoLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline text-indigo-600 break-all"
-                >
-                  {product.moreInfoLink}
-                </a>
-              ) : (
-                <span className="text-gray-400">N/A</span>
-              )}
-            </div>
-            <div>
-              <strong>Created by:</strong> {product.createdBy || "N/A"}
-            </div>
-            <div>
-              <strong>Modified by:</strong> {product.modifiedBy || "N/A"}
+              <p>
+                <strong>Created By:</strong> {product.createdBy}
+              </p>
+              <p>
+                <strong>Modified By:</strong> {product.modifiedBy}
+              </p>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

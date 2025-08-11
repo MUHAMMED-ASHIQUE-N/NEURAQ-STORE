@@ -28,7 +28,7 @@ export default function SoftwareSidebar({
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0 lg:static lg:inset-auto
-        flex flex-col h-full`}
+        flex flex-col h-screen`}
       >
         {/* Mobile close header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 lg:hidden">

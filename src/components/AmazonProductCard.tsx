@@ -15,143 +15,141 @@ export default function AmazonProductCard({
   onEdit: (product: any) => void;
   onDelete: (id: string) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   return (
-    <div
-      className={`
-        w-full sm:w-72 h-72 bg-white rounded-xl border shadow transition-all duration-300
-        hover:shadow-xl hover:scale-105 hover:-translate-y-1
-        flex flex-col justify-between overflow-hidden relative
-      `}
-      style={{ aspectRatio: "1 / 1", minWidth: "16rem", minHeight: "16rem" }}
-    >
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
-        {/* Image */}
-        <div className="w-28 h-28 flex-shrink-0 flex items-center justify-center mb-2">
-          {product.images && product.images[0] ? (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="w-full h-full object-cover rounded-md border"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
-              No Image
-            </div>
-          )}
-        </div>
-        {/* Product Name */}
-        <div className="text-lg font-bold text-center truncate w-full">
-          {product.name}
-        </div>
+    <>
+      {/* Card */}
+      <div
+        className="bg-white rounded-lg shadow-lg p-4 flex flex-col justify-between 
+        transition-all duration-300 hover:shadow-xl hover:scale-105 hover:-translate-y-1"
+      >
+        {/* Thumbnail image with fallback */}
+        {product.images ? (
+          <img
+            src={product.images}
+            alt={product.name}
+            className="w-full object-contain rounded mb-3"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/no-image.png"; // Update with actual placeholder
+            }}
+          />
+        ) : null}
+
+        {/* Name */}
+        <h6 className="text-lg font-semibold truncate">{product.name}</h6>
+
         {/* Price */}
-        <div className="mt-1 text-xl text-indigo-700 font-semibold">
-          {formatPrice(product.finalPrice)}
+        {product.finalPrice !== undefined && (
+          <p className="text-gray-800 font-medium">
+            {formatPrice(product.finalPrice)}
+          </p>
+        )}
+
+        {/* Buttons */}
+        <div className="flex space-x-3 mt-3">
+          <button
+            onClick={() => onEdit(product)}
+            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+            title="Edit"
+          >
+            <PenSquare size={16} />
+            <span>Edit</span>
+          </button>
+          <button
+            onClick={() => onDelete(product.id)}
+            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-red-100 text-red-800 hover:bg-red-200"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+            <span>Delete</span>
+          </button>
+          <button
+            onClick={() => setShowPopup(true)}
+            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200"
+            title="View details"
+          >
+            <Eye size={16} />
+            <span>View</span>
+          </button>
         </div>
       </div>
 
-      {/* Action Buttons with lucide-react icons */}
-      <div className="flex items-center justify-center gap-3 mb-2">
-        <button
-          className="flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-1 rounded-md font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
-          onClick={() => onEdit(product)}
-        >
-          <PenSquare size={18} /> Edit
-        </button>
-        <button
-          className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-md font-semibold shadow hover:from-red-600 hover:to-pink-600 transition"
-          onClick={() => onDelete(product.id)}
-        >
-          <Trash2 size={18} /> Delete
-        </button>
-        <button
-          className="flex items-center gap-1 bg-gradient-to-r from-gray-500 to-gray-700 text-white px-3 py-1 rounded-md font-semibold shadow hover:from-gray-700 hover:to-gray-900 transition"
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? <EyeOff size={18} /> : <Eye size={18} />}
-          {expanded ? "Hide" : "View"}
-        </button>
-      </div>
+      {/* Modal */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg aspect-square p-6 overflow-y-auto max-h-[90vh]">
+            {/* Close */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="text-gray-500 hover:text-gray-800"
+                title="Close"
+              >
+                <EyeOff size={20} />
+              </button>
+            </div>
 
-      {/* Expanded Details Overlay */}
-      {expanded && (
-        <div className="absolute top-0 left-0 w-full h-full bg-white/95 px-4 py-4 flex flex-col rounded-xl overflow-auto z-10 border">
-          <div className="absolute top-2 right-2">
-            <button
-              className="bg-gray-200 rounded-full text-gray-600 px-2 py-1 font-bold shadow"
-              onClick={() => setExpanded(false)}
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-1 text-sm pt-4">
-            <div>
-              <span className="font-semibold">Image:</span>
-              {product.images && product.images[0] ? (
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-24 h-24 object-cover rounded border my-1"
-                />
-              ) : (
-                <span className="text-gray-400"> No Image</span>
+            {/* Full image with fallback */}
+            {product.images ? (
+              <img
+                src={product.images}
+                alt={product.name}
+                className="w-full object-contain rounded mb-4"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/no-image.png"; // Update with your placeholder path
+                }}
+              />
+            ) : null}
+
+            {/* Details */}
+            <h2 className="text-xl font-bold mt-4">{product.title}</h2>
+            <p className="text-gray-600">{product.name}</p>
+            {product.description && (
+              <p className="mt-2 text-sm text-gray-700">
+                {product.description}
+              </p>
+            )}
+
+            <div className="mt-4 space-y-1 text-sm">
+              <p>
+                <strong>Quantity:</strong> {product.quantity}
+              </p>
+              <p>
+                <strong>Original Price:</strong>{" "}
+                {formatPrice(product.originalPrice)}
+              </p>
+              <p>
+                <strong>Discount %:</strong> {product.discountPercent}%
+              </p>
+              <p>
+                <strong>Final Price:</strong> {formatPrice(product.finalPrice)}
+              </p>
+              {product.buyingLink && (
+                <p>
+                  <strong>Buying Link:</strong>{" "}
+                  <a
+                    href={product.buyingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {product.buyingLink}
+                  </a>
+                </p>
               )}
-            </div>
-            <div>
-              <span className="font-semibold">Title:</span> {product.title}
-            </div>
-            <div>
-              <span className="font-semibold">Name:</span> {product.name}
-            </div>
-            <div>
-              <span className="font-semibold">Description:</span>{" "}
-              {product.description || (
-                <em className="text-gray-400">No description</em>
-              )}
-            </div>
-            <div>
-              <span className="font-semibold">Quantity:</span>{" "}
-              {product.quantity}
-            </div>
-            <div>
-              <span className="font-semibold">Original Price:</span>{" "}
-              {formatPrice(product.originalPrice)}
-            </div>
-            <div>
-              <span className="font-semibold">Discount %:</span>{" "}
-              {product.discountPercent ?? "N/A"}%
-            </div>
-            <div>
-              <span className="font-semibold">Final Price:</span>{" "}
-              {formatPrice(product.finalPrice)}
-            </div>
-            <div>
-              <span className="font-semibold">Buying Link:</span>{" "}
-              {product.buyingLink ? (
-                <a
-                  href={product.buyingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline break-all"
-                >
-                  {product.buyingLink}
-                </a>
-              ) : (
-                <span className="text-gray-400">N/A</span>
-              )}
-            </div>
-            <div>
-              <span className="font-semibold">Created by:</span>{" "}
-              {product.createdBy || "N/A"}
-            </div>
-            <div>
-              <span className="font-semibold">Modified by:</span>{" "}
-              {product.modifiedBy || "N/A"}
+              <p>
+                <strong>Created By:</strong> {product.createdBy}
+              </p>
+              <p>
+                <strong>Modified By:</strong> {product.modifiedBy}
+              </p>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

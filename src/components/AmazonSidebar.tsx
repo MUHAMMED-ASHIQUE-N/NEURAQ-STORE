@@ -34,7 +34,7 @@ export default function AmazonSidebar({
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:static lg:inset-auto
-          flex flex-col h-full
+          flex flex-col h-screen
         `}
       >
         {/* Mobile close header */}

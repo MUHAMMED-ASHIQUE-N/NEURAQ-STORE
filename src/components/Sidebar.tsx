@@ -62,7 +62,7 @@ export default function Sidebar({
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0 lg:static lg:inset-auto
-        flex flex-col h-full
+        flex flex-col h-screen
       `}
       aria-label="Sidebar navigation"
     >
