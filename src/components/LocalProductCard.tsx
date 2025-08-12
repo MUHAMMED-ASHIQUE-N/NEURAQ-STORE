@@ -50,7 +50,7 @@ export default function LocalProductCard({
         {/* Buttons */}
         <div className="flex space-x-3 mt-3">
           <button
-            onClick={() => onEdit(product)}
+            onClick={() => onEdit(product.id)}
             className="flex items-center space-x-1 px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
             title="Edit"
           >
