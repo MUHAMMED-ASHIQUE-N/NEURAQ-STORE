@@ -272,7 +272,7 @@ export default function SoftwareProducts() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-semibold mb-6">
+      <h1 className="text-2xl font-semibold mb-6">
         Software Products Management
       </h1>
 
@@ -283,7 +283,7 @@ export default function SoftwareProducts() {
       )}
 
       <form onSubmit={handleSubmit} className="mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add Software Product"}
         </h2>
 
@@ -300,7 +300,7 @@ export default function SoftwareProducts() {
               name="title"
               value={form.title}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -321,7 +321,7 @@ export default function SoftwareProducts() {
               name="name"
               value={form.name}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -347,7 +347,7 @@ export default function SoftwareProducts() {
               min={0}
               value={form.quantity}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.quantity ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -368,7 +368,7 @@ export default function SoftwareProducts() {
               name="companyName"
               value={form.companyName}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.companyName ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -389,7 +389,7 @@ export default function SoftwareProducts() {
               name="accessDuration"
               value={form.accessDuration}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.accessDuration ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -418,7 +418,7 @@ export default function SoftwareProducts() {
               step="0.01"
               value={form.originalPrice}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.originalPrice ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -445,7 +445,7 @@ export default function SoftwareProducts() {
               step="0.01"
               value={form.discountPercent}
               onChange={handleFieldChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.discountPercent ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}

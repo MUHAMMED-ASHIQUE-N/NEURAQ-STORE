@@ -279,9 +279,7 @@ export default function LocalProducts() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-semibold mb-6">
-        Local Products Management
-      </h1>
+      <h1 className="text-2xl font-semibold mb-6">Local Products Management</h1>
 
       {message && (
         <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
@@ -290,7 +288,7 @@ export default function LocalProducts() {
       )}
 
       <form onSubmit={handleSubmit} className="mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Product" : "Add Local Product"}
         </h2>
 
@@ -307,7 +305,7 @@ export default function LocalProducts() {
               name="title"
               value={form.title}
               onChange={handleInputChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.title ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -328,7 +326,7 @@ export default function LocalProducts() {
               name="name"
               value={form.name}
               onChange={handleInputChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -354,7 +352,7 @@ export default function LocalProducts() {
               min={0}
               value={form.quantity}
               onChange={handleInputChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.quantity ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -378,7 +376,7 @@ export default function LocalProducts() {
               step="0.01"
               value={form.originalPrice}
               onChange={handleInputChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.originalPrice ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}
@@ -405,7 +403,7 @@ export default function LocalProducts() {
               step="0.01"
               value={form.discountPercent}
               onChange={handleInputChange}
-              className={`w-full md:w-auto border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
+              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                 errors.discountPercent ? "border-red-500" : "border-gray-300"
               }`}
               disabled={loading}

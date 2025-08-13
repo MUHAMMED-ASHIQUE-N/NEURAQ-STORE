@@ -30,7 +30,7 @@ export default function SoftwareAdminDashboard() {
     <div className="min-h-screen flex bg-gray-100">
       {/* Overlay for sidebar on small/medium screens */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
           sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={toggleSidebar}
@@ -38,7 +38,7 @@ export default function SoftwareAdminDashboard() {
       ></div>
 
       {/* Sidebar */}
-      <div className="fixed top-14">
+      <div className="fixed top-14 z-60">
         <SoftwareSidebar
           activeNav={activeNav}
           onSelect={setActiveNav}
