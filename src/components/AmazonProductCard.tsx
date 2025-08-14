@@ -78,7 +78,7 @@ export default function AmazonProductCard({
 
       {/* Modal */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-lg aspect-square p-6 overflow-y-auto max-h-[90vh]">
             {/* Close */}
             <div className="flex justify-end">
@@ -96,7 +96,7 @@ export default function AmazonProductCard({
               <img
                 src={product.images}
                 alt={product.name}
-                className="w-full object-contain rounded mb-4"
+                className="w-40 h-40 justify-left object-contain rounded mb-4"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = "/no-image.png"; // Update with your placeholder path
