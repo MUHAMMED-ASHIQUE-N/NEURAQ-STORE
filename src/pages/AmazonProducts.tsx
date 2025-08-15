@@ -7,6 +7,11 @@ import {
   Package,
   Tag,
   Type,
+  Hash,
+  ExternalLink,
+  DollarSign,
+  Images,
+  PlusCircle,
 } from "lucide-react";
 import {
   collection,
@@ -362,7 +367,7 @@ export default function AmazonProducts() {
           </div>
 
           {/* Description */}
-          <div className="mb-4">
+          <div className="mt-6">
             <label
               htmlFor="description"
               className="block text-sm font-semibold text-gray-700 mb-2"
@@ -382,11 +387,15 @@ export default function AmazonProducts() {
             />
           </div>
 
-          {/* Quantity, Original Price, Discount Percent - flex row on md */}
-          <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
-            <div className="flex-1 mb-4 md:mb-0">
-              <label htmlFor="quantity" className="block font-medium mb-1">
-                Quantity *
+          {/* Quantity, Buying Link */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-4">
+              <label
+                htmlFor="quantity"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <Hash className="w-4 h-4 inline mr-1" />
+                Quantity
               </label>
               <input
                 name="quantity"
@@ -394,198 +403,222 @@ export default function AmazonProducts() {
                 min={0}
                 value={form.quantity}
                 onChange={handleInputChange}
-                className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                  errors.quantity ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Enter quantity"
+                required
                 disabled={loading}
               />
               {errors.quantity && (
                 <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
               )}
             </div>
-
-            <div className="flex-1 mb-4 md:mb-0">
-              <label htmlFor="originalPrice" className="block font-medium mb-1">
-                Original Price ($) *
-              </label>
-              <input
-                name="originalPrice"
-                type="number"
-                min={0}
-                step="0.01"
-                value={form.originalPrice}
-                onChange={handleInputChange}
-                className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                  errors.originalPrice ? "border-red-500" : "border-gray-300"
-                }`}
-                disabled={loading}
-              />
-              {errors.originalPrice && (
-                <p className="text-red-600 text-sm mt-1">
-                  {errors.originalPrice}
-                </p>
-              )}
-            </div>
-
-            <div className="flex-1">
+            <div className="mt-4">
               <label
-                htmlFor="discountPercent"
-                className="block font-medium mb-1"
+                htmlFor="buyingLink"
+                className="block text-sm font-semibold text-gray-700 mb-2"
               >
-                Discount % *
+                <ExternalLink className="w-4 h-4 inline mr-1" />
+                Buying Link
               </label>
               <input
-                name="discountPercent"
-                type="number"
-                min={0}
-                max={100}
-                step="0.01"
-                value={form.discountPercent}
+                name="buyingLink"
+                value={form.buyingLink}
                 onChange={handleInputChange}
-                className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                  errors.discountPercent ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="https://amazon.com/..."
+                required
                 disabled={loading}
               />
-              {errors.discountPercent && (
-                <p className="text-red-600 text-sm mt-1">
-                  {errors.discountPercent}
-                </p>
+              {errors.buyingLink && (
+                <p className="text-red-600 text-sm mt-1">{errors.buyingLink}</p>
               )}
             </div>
           </div>
 
-          {/* Computed Final Price (read-only) */}
-          <div className="mb-4">
-            <label className="block font-medium mb-1">Final Price ($)</label>
-            <div className="px-3 py-2 rounded bg-gray-100">
-              {computeFinalPrice(
-                form.originalPrice,
-                form.discountPercent
-              ).toFixed(2)}
-            </div>
-          </div>
+          {/* Original Price, Discount, Final Price */}
 
-          {/* Buying Link */}
-          <div className="mb-4">
-            <label htmlFor="buyingLink" className="block font-medium mb-1">
-              Buying Link (URL)
-            </label>
-            <input
-              name="buyingLink"
-              value={form.buyingLink}
-              onChange={handleInputChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.buyingLink ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.buyingLink && (
-              <p className="text-red-600 text-sm mt-1">{errors.buyingLink}</p>
-            )}
-          </div>
-
-          {/* Image Inputs Section */}
-          <div className="mb-6">
-            <label className="block font-medium mb-2">
-              Images (up to {MAX_IMAGES})
-            </label>
-
-            {imageInputs.map((input, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col md:flex-row md:items-center md:space-x-3 mb-4"
-              >
-                {/* Type selector */}
-                <select
-                  value={input.type}
-                  onChange={(e) =>
-                    handleImageTypeChange(idx, e.target.value as ImageInputType)
-                  }
-                  disabled={loading}
-                  className="mb-2 md:mb-0 border border-gray-300 rounded px-3 py-2 w-full md:w-40"
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <DollarSign className="w-5 h-5 mr-2" />
+              Price Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="">
+                <label
+                  htmlFor="originalPrice"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  <option value="url">Add Image by URL</option>
-                  <option value="upload">Upload Image</option>
-                </select>
-
-                {/* URL input or file upload */}
-                {input.type === "url" ? (
-                  <input
-                    type="text"
-                    placeholder="Image URL"
-                    value={input.value}
-                    onChange={(e) => handleImageUrlChange(idx, e.target.value)}
-                    className={`flex-grow border rounded px-3 py-2 ${
-                      errors[`image_${idx}`]
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                    disabled={loading}
-                  />
-                ) : (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) await handleUploadFile(idx, file);
-                    }}
-                    disabled={loading}
-                    className="flex-grow p-1"
-                  />
-                )}
-
-                {/* Remove button */}
-                <button
-                  type="button"
-                  onClick={() => removeImageInput(idx)}
+                  Original Price ($)
+                </label>
+                <input
+                  name="originalPrice"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={form.originalPrice}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="0.00"
+                  required
                   disabled={loading}
-                  className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold mt-2 md:mt-0 md:ml-2"
-                  aria-label={`Remove image input ${idx + 1}`}
-                >
-                  <Trash2 size={16} />
-                  Remove
-                </button>
-                {errors[`image_${idx}`] && (
-                  <p className="text-red-600 text-sm mt-1 md:mt-0">
-                    {errors[`image_${idx}`]}
+                />
+                {errors.originalPrice && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.originalPrice}
                   </p>
                 )}
               </div>
-            ))}
 
-            {/* Add Image Input Button */}
-            {imageInputs.length < MAX_IMAGES && (
-              <button
-                type="button"
-                onClick={addImageInput}
-                disabled={loading}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded px-4 py-2 font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition"
-              >
-                <Plus size={20} />
-                Add Image
-              </button>
-            )}
+              <div className="">
+                <label
+                  htmlFor="discountPercent"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Discount (%)
+                </label>
+                <input
+                  name="discountPercent"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="0.01"
+                  value={form.discountPercent}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                {errors.discountPercent && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.discountPercent}
+                  </p>
+                )}
+              </div>
+
+              {/* Computed Final Price (read-only) */}
+              <div className="">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Final Price ($)
+                </label>
+                <div className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100">
+                  {computeFinalPrice(
+                    form.originalPrice,
+                    form.discountPercent
+                  ).toFixed(2)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Image Inputs Section */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <Images className="w-5 h-5 mr-2" />
+                Product Images (Up to {MAX_IMAGES} )
+              </h3>
+
+              {/* Add Image Input Button */}
+              {imageInputs.length < MAX_IMAGES && (
+                <button
+                  type="button"
+                  onClick={addImageInput}
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Image
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="border border-gray-200 rounded-lg p-4 image-preview">
+              {imageInputs.map((input, idx) => (
+                <div key={idx} className="">
+                  <div className="flex items-center justify-between mb-3">
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      onClick={() => removeImageInput(idx)}
+                      disabled={loading}
+                      className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold mt-2 md:mt-0 md:ml-2"
+                      aria-label={`Remove image input ${idx + 1}`}
+                    >
+                      <Trash2 size={16} />
+                      Remove
+                    </button>
+                    {errors[`image_${idx}`] && (
+                      <p className="text-red-600 text-sm mt-1 md:mt-0">
+                        {errors[`image_${idx}`]}
+                      </p>
+                    )}
+                  </div>
+                  {/* Type selector */}
+                  <div className="mb-3">
+                    <select
+                      value={input.type}
+                      onChange={(e) =>
+                        handleImageTypeChange(
+                          idx,
+                          e.target.value as ImageInputType
+                        )
+                      }
+                      disabled={loading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg image-type-select"
+                    >
+                      <option value="url">Image URL</option>
+                      <option value="upload">Upload Image</option>
+                    </select>
+                  </div>
+
+                  {/* URL input or file upload */}
+                  {input.type === "url" ? (
+                    <input
+                      type="text"
+                      value={input.value}
+                      onChange={(e) =>
+                        handleImageUrlChange(idx, e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder="Enter image URL"
+                      disabled={loading}
+                    />
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) await handleUploadFile(idx, file);
+                      }}
+                      disabled={loading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder="Upload Image"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Submit and Clear buttons */}
-          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row gap-4 pt-6">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-indigo-700 transition disabled:opacity-50"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
             >
-              <CheckSquare size={20} />
+              <PlusCircle className="w-5 h-5" />
               {editingId ? "Update Product" : "Add Product"}
             </button>
             <button
               type="button"
               onClick={resetForm}
               disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-900 font-semibold px-4 py-2 rounded shadow hover:bg-gray-400 transition disabled:opacity-50"
+              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
             >
-              <Eraser size={20} />
+              <Eraser className="w-5 h-5" />
               Clear
             </button>
           </div>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Amazon Product Management</title>
+    <title>Product Management - Local Products</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -20,14 +20,14 @@
       <!-- Header -->
       <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div class="flex items-center gap-3 mb-2">
-          <div class="p-2 bg-orange-100 rounded-lg">
-            <i data-lucide="package" class="w-6 h-6 text-orange-600"></i>
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <i data-lucide="package" class="w-6 h-6 text-blue-600"></i>
           </div>
-          <h1 class="text-3xl font-bold text-gray-800">
-            Amazon Product Management
-          </h1>
+          <h1 class="text-3xl font-bold text-gray-800">Product Management</h1>
         </div>
-        <p class="text-gray-600">Add and manage your Amazon product listings</p>
+        <p class="text-gray-600">
+          Add and manage your local products inventory
+        </p>
       </div>
 
       <!-- Main Form -->
@@ -38,27 +38,28 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>
-                Product Title
+                Product Title *
               </label>
               <input
                 type="text"
                 id="title"
+                required
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="Enter product title"
-                required
               />
             </div>
+
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 <i data-lucide="type" class="w-4 h-4 inline mr-1"></i>
-                Product Name
+                Product Name *
               </label>
               <input
                 type="text"
                 id="name"
+                required
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="Enter product name"
-                required
               />
             </div>
           </div>
@@ -67,119 +68,165 @@
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
               <i data-lucide="file-text" class="w-4 h-4 inline mr-1"></i>
-              Description
+              Description *
             </label>
             <textarea
               id="description"
-              rows="4"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Enter detailed product description"
               required
+              rows="4"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+              placeholder="Describe your product in detail..."
             ></textarea>
           </div>
 
-          <!-- Quantity and Buying Link -->
+          <!-- Quantity and Category -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 <i data-lucide="hash" class="w-4 h-4 inline mr-1"></i>
-                Quantity
+                Quantity *
               </label>
               <input
                 type="number"
                 id="quantity"
+                required
                 min="0"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter quantity"
-                required
+                placeholder="0"
               />
             </div>
+
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="external-link" class="w-4 h-4 inline mr-1"></i>
-                Buying Link
+                <i data-lucide="grid-3x3" class="w-4 h-4 inline mr-1"></i>
+                Product Category *
               </label>
-              <input
-                type="url"
-                id="buyingLink"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="https://amazon.com/..."
+              <select
+                id="category"
                 required
-              />
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <option value="">Select category</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Home & Garden">Home & Garden</option>
+                <option value="Sports & Outdoors">Sports & Outdoors</option>
+                <option value="Books & Media">Books & Media</option>
+                <option value="Food & Beverages">Food & Beverages</option>
+                <option value="Health & Beauty">Health & Beauty</option>
+                <option value="Automotive">Automotive</option>
+                <option value="Toys & Games">Toys & Games</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
           </div>
 
           <!-- Price Details -->
           <div class="bg-gray-50 rounded-lg p-6">
             <h3
-              class="text-lg font-semibold text-gray-800 mb-4 flex items-center"
+              class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"
             >
-              <i data-lucide="dollar-sign" class="w-5 h-5 mr-2"></i>
+              <i data-lucide="dollar-sign" class="w-5 h-5"></i>
               Price Details
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Original Price ($)</label
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Original Price *</label
                 >
                 <input
                   type="number"
                   id="originalPrice"
-                  step="0.01"
+                  required
                   min="0"
+                  step="0.01"
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="0.00"
-                  required
+                  oninput="calculateFinalPrice()"
                 />
               </div>
+
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Discount (%)</label
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Discount %</label
                 >
                 <input
                   type="number"
                   id="discount"
-                  step="0.01"
                   min="0"
                   max="100"
+                  step="0.1"
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="0"
+                  oninput="calculateFinalPrice()"
                 />
               </div>
+
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Final Price ($)</label
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Final Price</label
                 >
                 <input
                   type="number"
                   id="finalPrice"
-                  step="0.01"
-                  min="0"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100"
-                  placeholder="0.00"
                   readonly
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                  placeholder="0.00"
                 />
               </div>
+            </div>
+          </div>
+
+          <!-- Company and External Link -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i data-lucide="building" class="w-4 h-4 inline mr-1"></i>
+                Company Name *
+              </label>
+              <input
+                type="text"
+                id="company"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Enter company name"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i data-lucide="external-link" class="w-4 h-4 inline mr-1"></i>
+                More About Product (Link)
+              </label>
+              <input
+                type="url"
+                id="externalLink"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="https://example.com/product-info"
+              />
             </div>
           </div>
 
           <!-- Images Section -->
           <div class="bg-gray-50 rounded-lg p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                <i data-lucide="images" class="w-5 h-5 mr-2"></i>
-                Product Images (Up to 5)
+              <h3
+                class="text-lg font-semibold text-gray-800 flex items-center gap-2"
+              >
+                <i data-lucide="image" class="w-5 h-5"></i>
+                Product Images (Up to 3)
               </h3>
               <button
                 type="button"
-                id="addImageBtn"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                onclick="addImageInput()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
               >
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 Add Image
               </button>
             </div>
-            <div id="imagesContainer" class="space-y-4">
+
+            <div id="imageContainer" class="space-y-4">
               <!-- Image inputs will be added here dynamically -->
             </div>
           </div>
@@ -192,10 +239,10 @@
             </label>
             <input
               type="text"
-              id="adminUsername"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100"
-              value="admin@amazon.com"
+              id="adminUser"
               readonly
+              value="admin@localstore.com"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
             />
           </div>
 
@@ -203,17 +250,18 @@
           <div class="flex flex-col sm:flex-row gap-4 pt-6">
             <button
               type="submit"
-              class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+              class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-semibold"
             >
               <i data-lucide="plus-circle" class="w-5 h-5"></i>
               Add Product
             </button>
+
             <button
               type="button"
-              id="clearBtn"
-              class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+              onclick="clearForm()"
+              class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-semibold"
             >
-              <i data-lucide="trash-2" class="w-5 h-5"></i>
+              <i data-lucide="refresh-cw" class="w-5 h-5"></i>
               Clear Form
             </button>
           </div>
@@ -226,105 +274,127 @@
       lucide.createIcons();
 
       let imageCount = 0;
-      const maxImages = 5;
+      const maxImages = 3;
 
-      // Price calculation
+      function addImageInput() {
+        if (imageCount >= maxImages) {
+          alert("Maximum 3 images allowed");
+          return;
+        }
+
+        imageCount++;
+        const container = document.getElementById("imageContainer");
+        const imageDiv = document.createElement("div");
+        imageDiv.className = "border border-gray-200 rounded-lg p-4 bg-white";
+        imageDiv.id = `imageInput${imageCount}`;
+
+        imageDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-medium text-gray-700">Image ${imageCount}</h4>
+                    <button type="button" onclick="removeImageInput(${imageCount})" 
+                            class="text-red-600 hover:text-red-800 transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-3">
+                    <select id="imageType${imageCount}" onchange="toggleImageInput(${imageCount})" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select image source</option>
+                        <option value="upload">Upload from device</option>
+                        <option value="url">Image URL</option>
+                    </select>
+                </div>
+                
+                <div id="uploadInput${imageCount}" class="hidden">
+                    <input type="file" accept="image/*" onchange="previewImage(${imageCount}, this)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div id="urlInput${imageCount}" class="hidden">
+                    <input type="url" placeholder="https://example.com/image.jpg" onchange="previewImageUrl(${imageCount}, this)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div id="preview${imageCount}" class="mt-3 hidden">
+                    <img class="w-32 h-32 object-cover rounded-lg border border-gray-200 image-preview" alt="Preview">
+                </div>
+            `;
+
+        container.appendChild(imageDiv);
+        lucide.createIcons();
+      }
+
+      function removeImageInput(id) {
+        const element = document.getElementById(`imageInput${id}`);
+        if (element) {
+          element.remove();
+          imageCount--;
+        }
+      }
+
+      function toggleImageInput(id) {
+        const type = document.getElementById(`imageType${id}`).value;
+        const uploadDiv = document.getElementById(`uploadInput${id}`);
+        const urlDiv = document.getElementById(`urlInput${id}`);
+        const preview = document.getElementById(`preview${id}`);
+
+        uploadDiv.classList.add("hidden");
+        urlDiv.classList.add("hidden");
+        preview.classList.add("hidden");
+
+        if (type === "upload") {
+          uploadDiv.classList.remove("hidden");
+        } else if (type === "url") {
+          urlDiv.classList.remove("hidden");
+        }
+      }
+
+      function previewImage(id, input) {
+        const file = input.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const preview = document.getElementById(`preview${id}`);
+            const img = preview.querySelector("img");
+            img.src = e.target.result;
+            preview.classList.remove("hidden");
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function previewImageUrl(id, input) {
+        const url = input.value;
+        if (url) {
+          const preview = document.getElementById(`preview${id}`);
+          const img = preview.querySelector("img");
+          img.src = url;
+          img.onerror = function () {
+            alert("Invalid image URL");
+            preview.classList.add("hidden");
+          };
+          preview.classList.remove("hidden");
+        }
+      }
+
       function calculateFinalPrice() {
         const originalPrice =
           parseFloat(document.getElementById("originalPrice").value) || 0;
         const discount =
           parseFloat(document.getElementById("discount").value) || 0;
-        const finalPrice = originalPrice * (1 - discount / 100);
+        const finalPrice = originalPrice - (originalPrice * discount) / 100;
         document.getElementById("finalPrice").value = finalPrice.toFixed(2);
       }
 
-      document
-        .getElementById("originalPrice")
-        .addEventListener("input", calculateFinalPrice);
-      document
-        .getElementById("discount")
-        .addEventListener("input", calculateFinalPrice);
-
-      // Image management
-      function createImageInput() {
-        if (imageCount >= maxImages) {
-          alert("Maximum 5 images allowed");
-          return;
+      function clearForm() {
+        if (confirm("Are you sure you want to clear all form data?")) {
+          document.getElementById("productForm").reset();
+          document.getElementById("imageContainer").innerHTML = "";
+          imageCount = 0;
+          document.getElementById("finalPrice").value = "";
         }
-
-        imageCount++;
-        const imageDiv = document.createElement("div");
-        imageDiv.className =
-          "border border-gray-200 rounded-lg p-4 image-preview";
-        imageDiv.innerHTML = `
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-sm font-medium text-gray-700">Image ${imageCount}</span>
-                    <button type="button" class="text-red-600 hover:text-red-800 remove-image" data-image-id="${imageCount}">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                <div class="mb-3">
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg image-type-select" data-image-id="${imageCount}">
-                        <option value="url">Image URL</option>
-                        <option value="upload">Upload Image</option>
-                    </select>
-                </div>
-                <div class="image-input-container" data-image-id="${imageCount}">
-                    <input type="url" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Enter image URL" name="imageUrl${imageCount}">
-                </div>
-            `;
-
-        document.getElementById("imagesContainer").appendChild(imageDiv);
-        lucide.createIcons();
-
-        // Add event listeners
-        const select = imageDiv.querySelector(".image-type-select");
-        const container = imageDiv.querySelector(".image-input-container");
-        const removeBtn = imageDiv.querySelector(".remove-image");
-
-        select.addEventListener("change", function () {
-          const type = this.value;
-          const imageId = this.dataset.imageId;
-
-          if (type === "upload") {
-            container.innerHTML = `<input type="file" class="w-full px-3 py-2 border border-gray-300 rounded-lg" accept="image/*" name="imageFile${imageId}">`;
-          } else {
-            container.innerHTML = `<input type="url" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Enter image URL" name="imageUrl${imageId}">`;
-          }
-        });
-
-        removeBtn.addEventListener("click", function () {
-          imageDiv.remove();
-          imageCount--;
-          updateImageNumbers();
-        });
       }
-
-      function updateImageNumbers() {
-        const imageDivs = document.querySelectorAll("#imagesContainer > div");
-        imageDivs.forEach((div, index) => {
-          const span = div.querySelector("span");
-          if (span) {
-            span.textContent = `Image ${index + 1}`;
-          }
-        });
-      }
-
-      // Event listeners
-      document
-        .getElementById("addImageBtn")
-        .addEventListener("click", createImageInput);
-
-      document
-        .getElementById("clearBtn")
-        .addEventListener("click", function () {
-          if (confirm("Are you sure you want to clear all form data?")) {
-            document.getElementById("productForm").reset();
-            document.getElementById("imagesContainer").innerHTML = "";
-            imageCount = 0;
-            document.getElementById("finalPrice").value = "";
-          }
-        });
 
       document
         .getElementById("productForm")
@@ -340,36 +410,31 @@
             originalPrice: document.getElementById("originalPrice").value,
             discount: document.getElementById("discount").value,
             finalPrice: document.getElementById("finalPrice").value,
-            buyingLink: document.getElementById("buyingLink").value,
-            adminUsername: document.getElementById("adminUsername").value,
-            images: [],
+            company: document.getElementById("company").value,
+            category: document.getElementById("category").value,
+            externalLink: document.getElementById("externalLink").value,
+            adminUser: document.getElementById("adminUser").value,
+            timestamp: new Date().toISOString(),
           };
 
-          // Collect image data
-          const imageDivs = document.querySelectorAll("#imagesContainer > div");
-          imageDivs.forEach((div, index) => {
-            const select = div.querySelector(".image-type-select");
-            const input = div.querySelector(".image-input-container input");
-            if (input && input.value) {
-              formData.images.push({
-                type: select.value,
-                value: input.value,
-              });
-            }
-          });
-
-          // Show success message (in a real app, this would send to backend)
+          // Show success message
           alert(
-            "Product added successfully!\n\nProduct Data:\n" +
-              JSON.stringify(formData, null, 2)
+            "Product added successfully!\n\nProduct: " +
+              formData.name +
+              "\nCategory: " +
+              formData.category +
+              "\nPrice: $" +
+              formData.finalPrice
           );
 
-          // Optional: Clear form after successful submission
-          // document.getElementById('clearBtn').click();
+          // In a real application, you would send this data to your backend
+          console.log("Product Data:", formData);
         });
 
-      // Add first image input by default
-      createImageInput();
+      // Add first image input on page load
+      window.addEventListener("load", function () {
+        addImageInput();
+      });
     </script>
     <script>
       (function () {
@@ -378,7 +443,7 @@
           if (b) {
             var d = b.createElement("script");
             d.innerHTML =
-              "window.__CF$cv$params={r:'96ef966dc2672fe5',t:'MTc1NTE2NTQ0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+              "window.__CF$cv$params={r:'96f7ba0060d21190',t:'MTc1NTI1MDc4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
             b.getElementsByTagName("head")[0].appendChild(d);
           }
         }
