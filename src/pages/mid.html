@@ -3,258 +3,599 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Software Product Management</title>
+    <title>Admin Dashboard - Product Approvals & User Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-      .image-preview {
-        transition: all 0.3s ease;
+      .table-container {
+        overflow-x: auto;
       }
-      .image-preview:hover {
-        transform: scale(1.02);
+      .action-button {
+        transition: all 0.2s ease;
       }
-      .gradient-bg {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      .action-button:hover {
+        transform: translateY(-1px);
       }
     </style>
   </head>
-  <body class="bg-gradient-to-br from-purple-50 to-blue-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+  <body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
       <!-- Header -->
       <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div class="flex items-center gap-3 mb-2">
-          <div class="p-2 gradient-bg rounded-lg">
-            <i data-lucide="monitor" class="w-6 h-6 text-white"></i>
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <i data-lucide="shield-check" class="w-6 h-6 text-blue-600"></i>
           </div>
-          <h1 class="text-3xl font-bold text-gray-800">
-            Software Product Management
-          </h1>
+          <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
         </div>
         <p class="text-gray-600">
-          Add and manage your software products and licenses
+          Manage product approvals and user permissions
         </p>
       </div>
 
-      <!-- Main Form -->
-      <div class="bg-white rounded-xl shadow-lg p-6">
-        <form id="softwareProductForm" class="space-y-6">
-          <!-- Basic Information -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>
-                Software Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                placeholder="Enter software title"
-              />
+      <!-- Pending Products Approvals Table -->
+      <div class="bg-white rounded-xl shadow-lg mb-8">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-orange-100 rounded-lg">
+              <i data-lucide="clock" class="w-5 h-5 text-orange-600"></i>
             </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="type" class="w-4 h-4 inline mr-1"></i>
-                Software Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                placeholder="Enter software name"
-              />
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i data-lucide="file-text" class="w-4 h-4 inline mr-1"></i>
-              Description *
-            </label>
-            <textarea
-              id="description"
-              required
-              rows="4"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
-              placeholder="Describe your software product, features, and benefits..."
-            ></textarea>
-          </div>
-
-          <!-- Quantity and Access Duration -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="hash" class="w-4 h-4 inline mr-1"></i>
-                License Quantity *
-              </label>
-              <input
-                type="number"
-                id="quantity"
-                required
-                min="0"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                placeholder="Number of licenses"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="clock" class="w-4 h-4 inline mr-1"></i>
-                Access Duration *
-              </label>
-              <select
-                id="accessDuration"
-                required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              >
-                <option value="">Select duration</option>
-                <option value="1-month">1 Month</option>
-                <option value="3-months">3 Months</option>
-                <option value="6-months">6 Months</option>
-                <option value="1-year">1 Year</option>
-                <option value="2-years">2 Years</option>
-                <option value="3-years">3 Years</option>
-                <option value="lifetime">Lifetime</option>
-                <option value="subscription">Monthly Subscription</option>
-                <option value="annual-subscription">Annual Subscription</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Images Section -->
-          <div class="bg-purple-50 rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3
-                class="text-lg font-semibold text-gray-800 flex items-center gap-2"
-              >
-                <i data-lucide="image" class="w-5 h-5"></i>
-                Software Screenshots (Up to 3)
-              </h3>
-              <button
-                type="button"
-                onclick="addImageInput()"
-                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm"
-              >
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                Add Image
-              </button>
-            </div>
-
-            <div id="imageContainer" class="space-y-4">
-              <!-- Image inputs will be added here dynamically -->
-            </div>
-          </div>
-
-          <!-- Price Details -->
-          <div class="bg-gray-50 rounded-lg p-6">
-            <h3
-              class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"
+            <h2 class="text-xl font-bold text-gray-800">
+              Pending Products Approvals
+            </h2>
+            <span
+              class="bg-orange-100 text-orange-800 text-sm font-medium px-2.5 py-0.5 rounded-full"
+              >5 Pending</span
             >
-              <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-              Pricing Details
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Original Price *</label
-                >
-                <input
-                  type="number"
-                  id="originalPrice"
-                  required
-                  min="0"
-                  step="0.01"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  placeholder="0.00"
-                  oninput="calculateFinalPrice()"
-                />
-              </div>
+          </div>
+        </div>
 
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Discount %</label
+        <div class="table-container">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                <input
-                  type="number"
-                  id="discount"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  placeholder="0"
-                  oninput="calculateFinalPrice()"
-                />
-              </div>
+                  Collection
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Title
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Name
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Quantity
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Final Price
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Created By
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                  >
+                    Electronics
+                  </span>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  Wireless Headphones Pro
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  SoundMax Pro X1
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  25
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
+                >
+                  $149.99
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  john.doe@store.com
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="approveProduct(1)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
+                    Approve
+                  </button>
+                  <button
+                    onclick="rejectProduct(1)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
+                    Reject
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                  >
+                    Software
+                  </span>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  Project Management Suite
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  TaskFlow Pro
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  100
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
+                >
+                  $299.00
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  sarah.wilson@tech.com
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="approveProduct(2)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
+                    Approve
+                  </button>
+                  <button
+                    onclick="rejectProduct(2)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
+                    Reject
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                  >
+                    Clothing
+                  </span>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  Premium Cotton T-Shirt
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  ComfortWear Basic
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  50
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
+                >
+                  $24.99
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  mike.chen@fashion.com
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="approveProduct(3)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
+                    Approve
+                  </button>
+                  <button
+                    onclick="rejectProduct(3)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
+                    Reject
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                  >
+                    Home & Garden
+                  </span>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  Smart Garden Kit
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  GrowSmart Indoor
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  15
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
+                >
+                  $89.99
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  lisa.park@garden.com
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="approveProduct(4)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
+                    Approve
+                  </button>
+                  <button
+                    onclick="rejectProduct(4)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
+                    Reject
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                  >
+                    Sports
+                  </span>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  Fitness Tracker Pro
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  FitBand Elite
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  30
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
+                >
+                  $199.99
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  alex.rodriguez@sports.com
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="approveProduct(5)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
+                    Approve
+                  </button>
+                  <button
+                    onclick="rejectProduct(5)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
+                    Reject
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Final Price</label
-                >
-                <input
-                  type="number"
-                  id="finalPrice"
-                  readonly
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                  placeholder="0.00"
-                />
-              </div>
+      <!-- Users Table -->
+      <div class="bg-white rounded-xl shadow-lg">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-100 rounded-lg">
+              <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
             </div>
-          </div>
-
-          <!-- Company Name -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i data-lucide="building" class="w-4 h-4 inline mr-1"></i>
-              Company Name *
-            </label>
-            <input
-              type="text"
-              id="company"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              placeholder="Enter software company name"
-            />
-          </div>
-
-          <!-- Admin Info -->
-          <div class="bg-purple-50 rounded-lg p-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i data-lucide="user" class="w-4 h-4 inline mr-1"></i>
-              Created/Modified by Admin
-            </label>
-            <input
-              type="text"
-              id="adminUser"
-              readonly
-              value="admin@softwarestore.com"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-            />
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-4 pt-6">
-            <button
-              type="submit"
-              class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-semibold"
+            <h2 class="text-xl font-bold text-gray-800">Users Management</h2>
+            <span
+              class="bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded-full"
+              >8 Users</span
             >
-              <i data-lucide="plus-circle" class="w-5 h-5"></i>
-              Add Software Product
-            </button>
-
-            <button
-              type="button"
-              onclick="clearForm()"
-              class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-semibold"
-            >
-              <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-              Clear Form
-            </button>
           </div>
-        </form>
+        </div>
+
+        <div class="table-container">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  User
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Current Role
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Change Role
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div
+                        class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold"
+                      >
+                        JD
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">
+                        John Doe
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        john.doe@example.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                  >
+                    Admin
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <select
+                    id="roleSelect1"
+                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="admin" selected>Admin</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="user">User</option>
+                  </select>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="submitRoleChange(1)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                    Submit
+                  </button>
+                  <button
+                    onclick="cancelRoleChange(1)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
+                    Cancel
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div
+                        class="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold"
+                      >
+                        SW
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">
+                        Sarah Wilson
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        sarah.wilson@example.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                  >
+                    Moderator
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <select
+                    id="roleSelect2"
+                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="moderator" selected>Moderator</option>
+                    <option value="user">User</option>
+                  </select>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="submitRoleChange(2)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                    Submit
+                  </button>
+                  <button
+                    onclick="cancelRoleChange(2)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
+                    Cancel
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div
+                        class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold"
+                      >
+                        MC
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">
+                        Mike Chen
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        mike.chen@example.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                  >
+                    User
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <select
+                    id="roleSelect3"
+                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="user" selected>User</option>
+                  </select>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="submitRoleChange(3)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                    Submit
+                  </button>
+                  <button
+                    onclick="cancelRoleChange(3)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
+                    Cancel
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div
+                        class="h-10 w-10 rounded-full bg-pink-500 flex items-center justify-center text-white font-semibold"
+                      >
+                        LP
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">
+                        Lisa Park
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        lisa.park@example.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                  >
+                    User
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <select
+                    id="roleSelect4"
+                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="user" selected>User</option>
+                  </select>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+                >
+                  <button
+                    onclick="submitRoleChange(4)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                    Submit
+                  </button>
+                  <button
+                    onclick="cancelRoleChange(4)"
+                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
+                    Cancel
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -262,166 +603,106 @@
       // Initialize Lucide icons
       lucide.createIcons();
 
-      let imageCount = 0;
-      const maxImages = 3;
+      // Product approval functions
+      function approveProduct(productId) {
+        if (confirm("Are you sure you want to approve this product?")) {
+          // In a real application, you would send this to your backend
+          alert(`Product ${productId} has been approved successfully!`);
 
-      function addImageInput() {
-        if (imageCount >= maxImages) {
-          alert("Maximum 3 images allowed");
-          return;
-        }
-
-        imageCount++;
-        const container = document.getElementById("imageContainer");
-        const imageDiv = document.createElement("div");
-        imageDiv.className = "border border-gray-200 rounded-lg p-4 bg-white";
-        imageDiv.id = `imageInput${imageCount}`;
-
-        imageDiv.innerHTML = `
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="font-medium text-gray-700">Screenshot ${imageCount}</h4>
-                    <button type="button" onclick="removeImageInput(${imageCount})" 
-                            class="text-red-600 hover:text-red-800 transition-colors">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                
-                <div class="mb-3">
-                    <select id="imageType${imageCount}" onchange="toggleImageInput(${imageCount})" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <option value="">Select image source</option>
-                        <option value="upload">Upload from device</option>
-                        <option value="url">Image URL</option>
-                    </select>
-                </div>
-                
-                <div id="uploadInput${imageCount}" class="hidden">
-                    <input type="file" accept="image/*" onchange="previewImage(${imageCount}, this)"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                </div>
-                
-                <div id="urlInput${imageCount}" class="hidden">
-                    <input type="url" placeholder="https://example.com/screenshot.jpg" onchange="previewImageUrl(${imageCount}, this)"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                </div>
-                
-                <div id="preview${imageCount}" class="mt-3 hidden">
-                    <img class="w-full h-32 object-cover rounded-lg border border-gray-200 image-preview" alt="Screenshot Preview">
-                </div>
-            `;
-
-        container.appendChild(imageDiv);
-        lucide.createIcons();
-      }
-
-      function removeImageInput(id) {
-        const element = document.getElementById(`imageInput${id}`);
-        if (element) {
-          element.remove();
-          imageCount--;
+          // Remove the row from the table (simulate approval)
+          const row = event.target.closest("tr");
+          row.style.backgroundColor = "#dcfce7";
+          setTimeout(() => {
+            row.remove();
+          }, 1000);
         }
       }
 
-      function toggleImageInput(id) {
-        const type = document.getElementById(`imageType${id}`).value;
-        const uploadDiv = document.getElementById(`uploadInput${id}`);
-        const urlDiv = document.getElementById(`urlInput${id}`);
-        const preview = document.getElementById(`preview${id}`);
+      function rejectProduct(productId) {
+        const reason = prompt("Please provide a reason for rejection:");
+        if (reason && reason.trim() !== "") {
+          // In a real application, you would send this to your backend
+          alert(`Product ${productId} has been rejected.\nReason: ${reason}`);
 
-        uploadDiv.classList.add("hidden");
-        urlDiv.classList.add("hidden");
-        preview.classList.add("hidden");
-
-        if (type === "upload") {
-          uploadDiv.classList.remove("hidden");
-        } else if (type === "url") {
-          urlDiv.classList.remove("hidden");
+          // Remove the row from the table (simulate rejection)
+          const row = event.target.closest("tr");
+          row.style.backgroundColor = "#fecaca";
+          setTimeout(() => {
+            row.remove();
+          }, 1000);
         }
       }
 
-      function previewImage(id, input) {
-        const file = input.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const preview = document.getElementById(`preview${id}`);
-            const img = preview.querySelector("img");
-            img.src = e.target.result;
-            preview.classList.remove("hidden");
-          };
-          reader.readAsDataURL(file);
-        }
-      }
+      // User role management functions
+      function submitRoleChange(userId) {
+        const select = document.getElementById(`roleSelect${userId}`);
+        const newRole = select.value;
+        const userName = select
+          .closest("tr")
+          .querySelector(".text-sm.font-medium.text-gray-900").textContent;
 
-      function previewImageUrl(id, input) {
-        const url = input.value;
-        if (url) {
-          const preview = document.getElementById(`preview${id}`);
-          const img = preview.querySelector("img");
-          img.src = url;
-          img.onerror = function () {
-            alert("Invalid image URL");
-            preview.classList.add("hidden");
-          };
-          preview.classList.remove("hidden");
-        }
-      }
-
-      function calculateFinalPrice() {
-        const originalPrice =
-          parseFloat(document.getElementById("originalPrice").value) || 0;
-        const discount =
-          parseFloat(document.getElementById("discount").value) || 0;
-        const finalPrice = originalPrice - (originalPrice * discount) / 100;
-        document.getElementById("finalPrice").value = finalPrice.toFixed(2);
-      }
-
-      function clearForm() {
-        if (confirm("Are you sure you want to clear all form data?")) {
-          document.getElementById("softwareProductForm").reset();
-          document.getElementById("imageContainer").innerHTML = "";
-          imageCount = 0;
-          document.getElementById("finalPrice").value = "";
-        }
-      }
-
-      document
-        .getElementById("softwareProductForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          // Collect form data
-          const formData = {
-            title: document.getElementById("title").value,
-            name: document.getElementById("name").value,
-            description: document.getElementById("description").value,
-            quantity: document.getElementById("quantity").value,
-            accessDuration: document.getElementById("accessDuration").value,
-            originalPrice: document.getElementById("originalPrice").value,
-            discount: document.getElementById("discount").value,
-            finalPrice: document.getElementById("finalPrice").value,
-            company: document.getElementById("company").value,
-            adminUser: document.getElementById("adminUser").value,
-            timestamp: new Date().toISOString(),
-          };
-
-          // Show success message
+        if (
+          confirm(
+            `Are you sure you want to change ${userName}'s role to ${newRole}?`
+          )
+        ) {
+          // In a real application, you would send this to your backend
           alert(
-            "Software product added successfully!\n\nProduct: " +
-              formData.name +
-              "\nAccess Duration: " +
-              formData.accessDuration +
-              "\nPrice: $" +
-              formData.finalPrice
+            `${userName}'s role has been successfully changed to ${newRole}!`
           );
 
-          // In a real application, you would send this data to your backend
-          console.log("Software Product Data:", formData);
-        });
+          // Update the current role badge
+          const roleBadge = select
+            .closest("tr")
+            .querySelector("td:nth-child(2) span");
+          roleBadge.textContent =
+            newRole.charAt(0).toUpperCase() + newRole.slice(1);
 
-      // Add first image input on page load
-      window.addEventListener("load", function () {
-        addImageInput();
+          // Update badge color based on role
+          roleBadge.className =
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ";
+          if (newRole === "admin") {
+            roleBadge.className += "bg-green-100 text-green-800";
+          } else if (newRole === "moderator") {
+            roleBadge.className += "bg-yellow-100 text-yellow-800";
+          } else {
+            roleBadge.className += "bg-gray-100 text-gray-800";
+          }
+
+          // Flash the row to indicate success
+          const row = select.closest("tr");
+          row.style.backgroundColor = "#dcfce7";
+          setTimeout(() => {
+            row.style.backgroundColor = "";
+          }, 1000);
+        }
+      }
+
+      function cancelRoleChange(userId) {
+        const select = document.getElementById(`roleSelect${userId}`);
+        const currentRoleBadge = select
+          .closest("tr")
+          .querySelector("td:nth-child(2) span");
+        const currentRole = currentRoleBadge.textContent.toLowerCase();
+
+        // Reset the select to the current role
+        select.value = currentRole;
+
+        alert("Role change has been cancelled.");
+      }
+
+      // Add some interactive feedback
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add hover effects to table rows
+        const tableRows = document.querySelectorAll("tbody tr");
+        tableRows.forEach((row) => {
+          row.addEventListener("mouseenter", function () {
+            this.style.transform = "translateX(2px)";
+          });
+          row.addEventListener("mouseleave", function () {
+            this.style.transform = "translateX(0)";
+          });
+        });
       });
     </script>
     <script>
@@ -431,7 +712,7 @@
           if (b) {
             var d = b.createElement("script");
             d.innerHTML =
-              "window.__CF$cv$params={r:'9700e1e6531f2fe1',t:'MTc1NTM0Njc5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+              "window.__CF$cv$params={r:'9711031a8202ffaa',t:'MTc1NTUxNTkyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
             b.getElementsByTagName("head")[0].appendChild(d);
           }
         }

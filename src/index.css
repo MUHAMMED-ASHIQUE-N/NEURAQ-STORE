@@ -9,3 +9,12 @@
 .gradient-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
+.table-container {
+  overflow-x: auto;
+}
+.action-button {
+  transition: all 0.2s ease;
+}
+.action-button:hover {
+  transform: translateY(-1px);
+}

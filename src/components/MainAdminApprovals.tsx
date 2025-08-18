@@ -10,7 +10,17 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { firestore } from "../firebase";
-import { CheckCircle2, XCircle, Pencil, Check, X } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Pencil,
+  Check,
+  X,
+  ShieldCheck,
+  Clock,
+  Users,
+  CheckCircle,
+} from "lucide-react";
 
 type Product = {
   id: string;
@@ -192,193 +202,240 @@ export default function MainAdminApprovals() {
   const isLoading = (id: string) => loadingActionIds.includes(id);
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-full">
-      {/* Products Pending Approval Table */}
-      <div className="overflow-x-auto mb-10">
-        <h2 className="text-xl font-semibold mb-4">
-          Pending Product Approvals
-        </h2>
-        <table className="min-w-full table-auto border border-gray-300 divide-y divide-gray-200 rounded">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[80px]">
-                Collection
-              </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
-                Title
-              </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[100px]">
-                Name
-              </th>
-              <th className="px-2 py-2 text-center whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[60px]">
-                Quantity
-              </th>
-              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[100px]">
-                Final Price
-              </th>
-              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
-                Created By
-              </th>
-              <th className="px-2 py-2 text-left whitespace-nowrap text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[120px]">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {products.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="text-center py-6 text-gray-500 text-xs md:text-sm"
-                >
-                  No pending products for approval.
-                </td>
-              </tr>
-            ) : (
-              products.map((product) => (
-                <tr
-                  key={`${product.collectionName}-${product.id}`}
-                  className="hover:bg-gray-50"
-                >
-                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
-                    {product.collectionName.replace("Products", "")}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
-                    {product.title}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
-                    {product.name}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-center text-xs md:text-sm text-gray-700">
-                    {product.quantity}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
-                    ${product.finalPrice.toFixed(2)}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700">
-                    {product.createdBy}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs md:text-sm text-gray-700 flex space-x-2">
-                    <button
-                      disabled={isLoading(product.id)}
-                      onClick={() => approveProduct(product)}
-                      title="Approve"
-                      className="flex items-center space-x-1 text-green-600 hover:text-green-800 disabled:opacity-50"
-                    >
-                      <CheckCircle2 size={16} />
-                      <span>Accept</span>
-                    </button>
-                    <button
-                      disabled={isLoading(product.id)}
-                      onClick={() => rejectProduct(product)}
-                      title="Reject"
-                      className="flex items-center space-x-1 text-red-600 hover:text-red-800 disabled:opacity-50"
-                    >
-                      <XCircle size={16} />
-                      <span>Reject</span>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <ShieldCheck className="w-6 h-6 text-blue-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Admin Dashboard
+            </h1>
+          </div>
+          <p className="text-gray-600">
+            Manage product approvals and user permissions
+          </p>
+        </div>
+        {/* Products Pending Approval Table */}
+        <div className="bg-white rounded-xl shadow-lg mb-8">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Clock className="w-5 h-5 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Pending Products Approvals
+              </h2>
+            </div>
+          </div>
 
-      {/* Users Table */}
-      <div className="overflow-x-auto">
-        <h2 className="text-xl font-semibold mb-4">Users</h2>
-        <table className="min-w-full table-auto border border-gray-300 divide-y divide-gray-200 rounded">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
-                User
-              </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
-                Current Role
-              </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[180px]">
-                Change Role
-              </th>
-              <th className="px-2 py-2 text-left text-xs md:text-sm font-medium text-gray-500 uppercase min-w-[140px]">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {users.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="text-center py-6 text-gray-500 text-xs md:text-sm"
-                >
-                  No users found.
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => {
-                const editing = roleEdits.hasOwnProperty(user.id);
-                return (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700 whitespace-nowrap">
-                      {user.email}
-                    </td>
-                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700 whitespace-nowrap">
-                      {user.role || "user"}
-                    </td>
-                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700">
-                      {editing ? (
-                        <select
-                          value={roleEdits[user.id]}
-                          onChange={(e) => selectRole(user.id, e.target.value)}
-                          className="border border-gray-300 rounded px-2 py-1 text-xs md:text-sm"
-                        >
-                          {availableRoles.map((role) => (
-                            <option key={role} value={role}>
-                              {role.charAt(0).toUpperCase() + role.slice(1)}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <button
-                          onClick={() => startRoleEdit(user.id)}
-                          className="flex items-center space-x-1 text-blue-600 hover:underline"
-                          title="Change Role"
-                        >
-                          <Pencil size={14} />
-                          <span>Change Role</span>
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-2 py-2 text-xs md:text-sm text-gray-700 whitespace-nowrap">
-                      {editing && (
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => submitRoleEdit(user.id)}
-                            disabled={isLoading(user.id)}
-                            className="flex items-center space-x-1 text-green-600 hover:text-green-800 disabled:opacity-50"
-                            title="Submit Role Change"
-                          >
-                            <Check size={16} />
-                            <span>Submit</span>
-                          </button>
-                          <button
-                            onClick={() => cancelRoleEdit(user.id)}
-                            className="flex items-center space-x-1 text-red-600 hover:text-red-800"
-                            title="Cancel Role Change"
-                          >
-                            <X size={16} />
-                            <span>Cancel</span>
-                          </button>
-                        </div>
-                      )}
+          <div className="table-container">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Collection
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Final Price
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created By
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {products.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="text-center py-6 text-gray-500 text-xs md:text-sm"
+                    >
+                      No pending products for approval.
                     </td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                ) : (
+                  products.map((product) => (
+                    <tr
+                      key={`${product.collectionName}-${product.id}`}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {product.collectionName.replace("Products", "")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {product.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.quantity}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                        ${product.finalPrice.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.createdBy}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button
+                          disabled={isLoading(product.id)}
+                          onClick={() => approveProduct(product)}
+                          title="Approve"
+                          className="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <Check className="w-3 h-3 mr-1" />
+                          <span>Accept</span>
+                        </button>
+                        <button
+                          disabled={isLoading(product.id)}
+                          onClick={() => rejectProduct(product)}
+                          title="Reject"
+                          className="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          <X className="w-3 h-3 mr-1" />
+                          <span>Reject</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Users Table */}
+        <div className="bg-white rounded-xl shadow-lg">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Users className="w-5 h-5 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Users Management
+              </h2>
+            </div>
+          </div>
+          <div className="table-container">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Current Role
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Change Role
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="text-center py-6 text-gray-500 text-xs md:text-sm"
+                    >
+                      No users found.
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((user) => {
+                    const editing = roleEdits.hasOwnProperty(user.id);
+                    return (
+                      <tr
+                        key={user.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {user.email}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {user.role || "user"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {editing ? (
+                            <select
+                              value={roleEdits[user.id]}
+                              onChange={(e) =>
+                                selectRole(user.id, e.target.value)
+                              }
+                              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            >
+                              {availableRoles.map((role) => (
+                                <option key={role} value={role}>
+                                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <button
+                              onClick={() => startRoleEdit(user.id)}
+                              className="flex items-center space-x-1 text-blue-600 hover:underline"
+                              title="Change Role"
+                            >
+                              <Pencil size={14} />
+                              <span>Change Role</span>
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          {editing && (
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => submitRoleEdit(user.id)}
+                                disabled={isLoading(user.id)}
+                                className="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                title="Submit Role Change"
+                              >
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                <span>Submit</span>
+                              </button>
+                              <button
+                                onClick={() => cancelRoleEdit(user.id)}
+                                className="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                              >
+                                <XCircle className="w-3 h-3 mr-1" />
+                                <span>Cancel</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );
