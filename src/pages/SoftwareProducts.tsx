@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from "react";
 
-import { Plus, CheckSquare, Eraser, Trash2 } from "lucide-react";
+import {
+  Plus,
+  CheckSquare,
+  Eraser,
+  Trash2,
+  Monitor,
+  Tag,
+  Type,
+  FileText,
+  Hash,
+  Clock,
+  Building,
+  DollarSign,
+  Images,
+  PlusCircle,
+  RefreshCcw,
+} from "lucide-react";
 
 import {
   collection,
@@ -271,344 +287,372 @@ export default function SoftwareProducts() {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-6">
-        Software Products Management
-      </h1>
-
-      {message && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
-          {message}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">
-          {editingId ? "Edit Product" : "Add Software Product"}
-        </h2>
-
-        {/* Title and Name */}
-        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
-          <div className="flex-1 mb-4 md:mb-0">
-            <label
-              htmlFor="title"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Title *
-            </label>
-            <input
-              name="title"
-              value={form.title}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.title ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.title && (
-              <p className="text-red-600 text-sm mt-1">{errors.title}</p>
-            )}
+    <div className="bg-gradient-to-br from-purple-50 to-blue-100 min-h-screen">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 gradient-bg rounded-lg">
+              <Monitor className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Software Product Management
+            </h1>
           </div>
-
-          <div className="flex-1">
-            <label
-              htmlFor="name"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Name *
-            </label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.name ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.name && (
-              <p className="text-red-600 text-sm mt-1">{errors.name}</p>
-            )}
-          </div>
+          <p className="text-gray-600">
+            Add and manage your software products and licenses
+          </p>
         </div>
 
-        {/* Quantity, Company Name, Access Duration */}
-        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
-          <div className="flex-1 mb-4 md:mb-0">
-            <label
-              htmlFor="quantity"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Quantity *
-            </label>
-            <input
-              name="quantity"
-              type="number"
-              min={0}
-              value={form.quantity}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.quantity ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.quantity && (
-              <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
-            )}
+        {message && (
+          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+            {message}
           </div>
+        )}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className="text-xl font-semibold mb-4">
+              {editingId ? "" : ""}
+            </h2>
 
-          <div className="flex-1 mb-4 md:mb-0">
-            <label
-              htmlFor="companyName"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Company Name *
-            </label>
-            <input
-              name="companyName"
-              value={form.companyName}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.companyName ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.companyName && (
-              <p className="text-red-600 text-sm mt-1">{errors.companyName}</p>
-            )}
-          </div>
-
-          <div className="flex-1">
-            <label
-              htmlFor="accessDuration"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Access Duration *
-            </label>
-            <input
-              name="accessDuration"
-              value={form.accessDuration}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.accessDuration ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.accessDuration && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.accessDuration}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Original Price and Discount Percent */}
-        <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
-          <div className="flex-1 mb-4 md:mb-0">
-            <label
-              htmlFor="originalPrice"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Original Price ($) *
-            </label>
-            <input
-              name="originalPrice"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.originalPrice}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.originalPrice ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.originalPrice && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.originalPrice}
-              </p>
-            )}
-          </div>
-
-          <div className="flex-1">
-            <label
-              htmlFor="discountPercent"
-              className="block text-sm md:text-base font-medium mb-1"
-            >
-              Discount % *
-            </label>
-            <input
-              name="discountPercent"
-              type="number"
-              min={0}
-              max={100}
-              step="0.01"
-              value={form.discountPercent}
-              onChange={handleFieldChange}
-              className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
-                errors.discountPercent ? "border-red-500" : "border-gray-300"
-              }`}
-              disabled={loading}
-            />
-            {errors.discountPercent && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.discountPercent}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Computed Final Price (read-only) */}
-        <div className="mb-4">
-          <label className="block text-sm md:text-base font-medium mb-1">
-            Final Price ($)
-          </label>
-          <div className="px-3 py-2 rounded bg-gray-100 text-base md:text-lg">
-            {computeFinalPrice(
-              form.originalPrice,
-              form.discountPercent
-            ).toFixed(2)}
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="mb-4">
-          <label
-            htmlFor="description"
-            className="block text-sm md:text-base font-medium mb-1"
-          >
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleFieldChange}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-            rows={3}
-            disabled={loading}
-          />
-        </div>
-
-        {/* Image Inputs Section */}
-        <div className="mb-6">
-          <label className="block text-sm md:text-base font-medium mb-2">
-            Images (max {MAX_IMAGES})
-          </label>
-
-          {imageInputs.map((input, idx) => (
-            <div
-              key={idx}
-              className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4"
-            >
-              {/* Type selector */}
-              <select
-                value={input.type}
-                onChange={(e) =>
-                  setImageInputs((imgs) =>
-                    imgs.map((img, i) =>
-                      i === idx
-                        ? {
-                            type: e.target.value as "url" | "upload",
-                            value: "",
-                          }
-                        : img
-                    )
-                  )
-                }
-                disabled={loading}
-                className="w-full md:w-40 border border-gray-300 rounded px-3 py-2 mb-2 md:mb-0"
-              >
-                <option value="url">Add Image by URL</option>
-                <option value="upload">Upload Image</option>
-              </select>
-
-              {/* URL input or file input */}
-              {input.type === "url" ? (
+            {/* Title and Name */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  <Tag className="w-4 h-4 inline mr-1" />
+                  Product Title
+                </label>
                 <input
-                  type="text"
-                  placeholder="Image URL"
-                  value={input.value}
-                  onChange={(e) =>
-                    setImageInputs((imgs) =>
-                      imgs.map((img, i) =>
-                        i === idx ? { ...img, value: e.target.value } : img
-                      )
-                    )
-                  }
-                  className={`flex-grow border rounded px-3 py-2 w-full md:w-auto ${
-                    errors[`image_${idx}`]
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
+                  name="title"
+                  value={form.title}
+                  onChange={handleFieldChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Enter software title"
                   disabled={loading}
                 />
-              ) : (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (file) await handleFileChange(e, idx);
-                  }}
-                  disabled={loading}
-                  className="flex-grow p-1"
-                />
-              )}
+                {errors.title && (
+                  <p className="text-red-600 text-sm mt-1">{errors.title}</p>
+                )}
+              </div>
 
-              {/* Remove button */}
-              <button
-                type="button"
-                onClick={() => removeImageInput(idx)}
-                disabled={loading}
-                className="mt-2 md:mt-0 text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
-                aria-label={`Remove image input ${idx + 1}`}
+              <div className="">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  <Type className="w-4 h-4 inline mr-1" />
+                  Product Name
+                </label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleFieldChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Enter software name"
+                  disabled={loading}
+                />
+                {errors.name && (
+                  <p className="text-red-600 text-sm mt-1">{errors.name}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="mt-4">
+              <label
+                htmlFor="description"
+                className="block text-sm font-semibold text-gray-700 mb-2"
               >
-                <Trash2 size={16} />
-                Remove
-              </button>
-              {errors[`image_${idx}`] && (
-                <p className="text-red-600 text-sm mt-1 md:mt-0">
-                  {errors[`image_${idx}`]}
+                <FileText className="w-4 h-4 inline mr-1" />
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleFieldChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+                placeholder="Describe your software product, features, and benefits..."
+                rows={3}
+                disabled={loading}
+              />
+            </div>
+
+            {/* Quantity, Access Duration */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="">
+                <label
+                  htmlFor="quantity"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  <Hash className="w-4 h-4 inline mr-1" />
+                  Quantity *
+                </label>
+                <input
+                  name="quantity"
+                  type="number"
+                  min={0}
+                  value={form.quantity}
+                  onChange={handleFieldChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Number of licenses"
+                  disabled={loading}
+                />
+                {errors.quantity && (
+                  <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>
+                )}
+              </div>
+              <div className="">
+                <label
+                  htmlFor="accessDuration"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  <Clock className="w-4 h-4 inline mr-1" />
+                  Access Duration *
+                </label>
+                <input
+                  name="accessDuration"
+                  value={form.accessDuration}
+                  onChange={handleFieldChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  disabled={loading}
+                />
+                {errors.accessDuration && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.accessDuration}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Company Name */}
+
+            <div className="">
+              <label
+                htmlFor="companyName"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                <Building className="w-4 h-4 inline mr-1" />
+                Company Name *
+              </label>
+              <input
+                name="companyName"
+                value={form.companyName}
+                onChange={handleFieldChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Enter software company name"
+                disabled={loading}
+              />
+              {errors.companyName && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.companyName}
                 </p>
               )}
             </div>
-          ))}
 
-          {/* Add Image Input Button */}
-          {imageInputs.length < MAX_IMAGES && (
-            <button
-              type="button"
-              onClick={addImageInput}
-              disabled={loading}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 text-white rounded px-4 py-2 font-semibold shadow hover:from-indigo-500 hover:via-blue-500 hover:to-cyan-500 transition"
-            >
-              <Plus size={20} />
-              Add Image
-            </button>
-          )}
-        </div>
+            {/* Price Details */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                Pricing Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="">
+                  <label
+                    htmlFor="originalPrice"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    Original Price ($) *
+                  </label>
+                  <input
+                    name="originalPrice"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={form.originalPrice}
+                    onChange={handleFieldChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="0.00"
+                    disabled={loading}
+                  />
+                  {errors.originalPrice && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.originalPrice}
+                    </p>
+                  )}
+                </div>
 
-        {/* Submit and Clear buttons */}
-        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-indigo-700 transition disabled:opacity-50"
-          >
-            <CheckSquare size={20} />
-            {editingId ? "Update Product" : "Add Product"}
-          </button>
-          <button
-            type="button"
-            onClick={resetForm}
-            disabled={loading}
-            className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-900 font-semibold px-4 py-2 rounded shadow hover:bg-gray-400 transition disabled:opacity-50"
-          >
-            <Eraser size={20} />
-            Clear
-          </button>
+                <div className="">
+                  <label
+                    htmlFor="discountPercent"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    Discount % *
+                  </label>
+                  <input
+                    name="discountPercent"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.01"
+                    value={form.discountPercent}
+                    onChange={handleFieldChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="0"
+                    disabled={loading}
+                  />
+                  {errors.discountPercent && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.discountPercent}
+                    </p>
+                  )}
+                </div>
+
+                {/* Computed Final Price (read-only) */}
+                <div className="">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Final Price ($)
+                  </label>
+                  <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600">
+                    {computeFinalPrice(
+                      form.originalPrice,
+                      form.discountPercent
+                    ).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Image Inputs Section */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <Images className="w-5 h-5 mr-2" />
+                  Product Images (Up to {MAX_IMAGES} )
+                </h3>
+
+                {/* Add Image Input Button */}
+                {imageInputs.length < MAX_IMAGES && (
+                  <button
+                    type="button"
+                    onClick={addImageInput}
+                    disabled={loading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Image
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-lg p-4 image-preview">
+                {imageInputs.map((input, idx) => (
+                  <div key={idx} className="">
+                    <div className="flex items-center justify-between mb-3">
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={() => removeImageInput(idx)}
+                        disabled={loading}
+                        className="flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold mt-2 md:mt-0 md:ml-2"
+                        aria-label={`Remove image input ${idx + 1}`}
+                      >
+                        <Trash2 size={16} />
+                        Remove
+                      </button>
+                      {errors[`image_${idx}`] && (
+                        <p className="text-red-600 text-sm mt-1 md:mt-0">
+                          {errors[`image_${idx}`]}
+                        </p>
+                      )}
+                    </div>
+                    {/* Type selector */}
+                    <div className="mb-3">
+                      <select
+                        value={input.type}
+                        onChange={(e) =>
+                          setImageInputs((imgs) =>
+                            imgs.map((img, i) =>
+                              i === idx
+                                ? {
+                                    type: e.target.value as "url" | "upload",
+                                    value: "",
+                                  }
+                                : img
+                            )
+                          )
+                        }
+                        disabled={loading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      >
+                        <option value="url">Add Image by URL</option>
+                        <option value="upload">Upload Image</option>
+                      </select>
+
+                      {/* URL input or file input */}
+                      <div className="mt-4">
+                        {input.type === "url" ? (
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            value={input.value}
+                            onChange={(e) =>
+                              setImageInputs((imgs) =>
+                                imgs.map((img, i) =>
+                                  i === idx
+                                    ? { ...img, value: e.target.value }
+                                    : img
+                                )
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            disabled={loading}
+                          />
+                        ) : (
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) await handleFileChange(e, idx);
+                            }}
+                            disabled={loading}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit and Clear buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-semibold"
+              >
+                <PlusCircle className="w-5 h-5" />
+                {editingId ? "Update Product" : "Add Product"}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                disabled={loading}
+                className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 font-semibold"
+              >
+                <RefreshCcw className="w-5 h-5" />
+                Clear
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
 
       {/* Products List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:overflow-x-auto">

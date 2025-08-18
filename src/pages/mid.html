@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Product Management - Local Products</title>
+    <title>Software Product Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -13,53 +13,58 @@
       .image-preview:hover {
         transform: scale(1.02);
       }
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
     </style>
   </head>
-  <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+  <body class="bg-gradient-to-br from-purple-50 to-blue-100 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
       <!-- Header -->
       <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div class="flex items-center gap-3 mb-2">
-          <div class="p-2 bg-blue-100 rounded-lg">
-            <i data-lucide="package" class="w-6 h-6 text-blue-600"></i>
+          <div class="p-2 gradient-bg rounded-lg">
+            <i data-lucide="monitor" class="w-6 h-6 text-white"></i>
           </div>
-          <h1 class="text-3xl font-bold text-gray-800">Product Management</h1>
+          <h1 class="text-3xl font-bold text-gray-800">
+            Software Product Management
+          </h1>
         </div>
         <p class="text-gray-600">
-          Add and manage your local products inventory
+          Add and manage your software products and licenses
         </p>
       </div>
 
       <!-- Main Form -->
       <div class="bg-white rounded-xl shadow-lg p-6">
-        <form id="productForm" class="space-y-6">
+        <form id="softwareProductForm" class="space-y-6">
           <!-- Basic Information -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 <i data-lucide="tag" class="w-4 h-4 inline mr-1"></i>
-                Product Title *
+                Software Title *
               </label>
               <input
                 type="text"
                 id="title"
                 required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter product title"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Enter software title"
               />
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 <i data-lucide="type" class="w-4 h-4 inline mr-1"></i>
-                Product Name *
+                Software Name *
               </label>
               <input
                 type="text"
                 id="name"
                 required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter product name"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Enter software name"
               />
             </div>
           </div>
@@ -74,50 +79,73 @@
               id="description"
               required
               rows="4"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-              placeholder="Describe your product in detail..."
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+              placeholder="Describe your software product, features, and benefits..."
             ></textarea>
           </div>
 
-          <!-- Quantity and Category -->
+          <!-- Quantity and Access Duration -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 <i data-lucide="hash" class="w-4 h-4 inline mr-1"></i>
-                Quantity *
+                License Quantity *
               </label>
               <input
                 type="number"
                 id="quantity"
                 required
                 min="0"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="0"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Number of licenses"
               />
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="grid-3x3" class="w-4 h-4 inline mr-1"></i>
-                Product Category *
+                <i data-lucide="clock" class="w-4 h-4 inline mr-1"></i>
+                Access Duration *
               </label>
               <select
-                id="category"
+                id="accessDuration"
                 required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               >
-                <option value="">Select category</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Clothing">Clothing</option>
-                <option value="Home & Garden">Home & Garden</option>
-                <option value="Sports & Outdoors">Sports & Outdoors</option>
-                <option value="Books & Media">Books & Media</option>
-                <option value="Food & Beverages">Food & Beverages</option>
-                <option value="Health & Beauty">Health & Beauty</option>
-                <option value="Automotive">Automotive</option>
-                <option value="Toys & Games">Toys & Games</option>
-                <option value="Other">Other</option>
+                <option value="">Select duration</option>
+                <option value="1-month">1 Month</option>
+                <option value="3-months">3 Months</option>
+                <option value="6-months">6 Months</option>
+                <option value="1-year">1 Year</option>
+                <option value="2-years">2 Years</option>
+                <option value="3-years">3 Years</option>
+                <option value="lifetime">Lifetime</option>
+                <option value="subscription">Monthly Subscription</option>
+                <option value="annual-subscription">Annual Subscription</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Images Section -->
+          <div class="bg-purple-50 rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3
+                class="text-lg font-semibold text-gray-800 flex items-center gap-2"
+              >
+                <i data-lucide="image" class="w-5 h-5"></i>
+                Software Screenshots (Up to 3)
+              </h3>
+              <button
+                type="button"
+                onclick="addImageInput()"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Add Image
+              </button>
+            </div>
+
+            <div id="imageContainer" class="space-y-4">
+              <!-- Image inputs will be added here dynamically -->
             </div>
           </div>
 
@@ -127,7 +155,7 @@
               class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"
             >
               <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-              Price Details
+              Pricing Details
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -140,7 +168,7 @@
                   required
                   min="0"
                   step="0.01"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   placeholder="0.00"
                   oninput="calculateFinalPrice()"
                 />
@@ -156,7 +184,7 @@
                   min="0"
                   max="100"
                   step="0.1"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   placeholder="0"
                   oninput="calculateFinalPrice()"
                 />
@@ -177,62 +205,23 @@
             </div>
           </div>
 
-          <!-- Company and External Link -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="building" class="w-4 h-4 inline mr-1"></i>
-                Company Name *
-              </label>
-              <input
-                type="text"
-                id="company"
-                required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter company name"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i data-lucide="external-link" class="w-4 h-4 inline mr-1"></i>
-                More About Product (Link)
-              </label>
-              <input
-                type="url"
-                id="externalLink"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="https://example.com/product-info"
-              />
-            </div>
-          </div>
-
-          <!-- Images Section -->
-          <div class="bg-gray-50 rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3
-                class="text-lg font-semibold text-gray-800 flex items-center gap-2"
-              >
-                <i data-lucide="image" class="w-5 h-5"></i>
-                Product Images (Up to 3)
-              </h3>
-              <button
-                type="button"
-                onclick="addImageInput()"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
-              >
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                Add Image
-              </button>
-            </div>
-
-            <div id="imageContainer" class="space-y-4">
-              <!-- Image inputs will be added here dynamically -->
-            </div>
+          <!-- Company Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i data-lucide="building" class="w-4 h-4 inline mr-1"></i>
+              Company Name *
+            </label>
+            <input
+              type="text"
+              id="company"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              placeholder="Enter software company name"
+            />
           </div>
 
           <!-- Admin Info -->
-          <div class="bg-blue-50 rounded-lg p-4">
+          <div class="bg-purple-50 rounded-lg p-4">
             <label class="block text-sm font-semibold text-gray-700 mb-2">
               <i data-lucide="user" class="w-4 h-4 inline mr-1"></i>
               Created/Modified by Admin
@@ -241,7 +230,7 @@
               type="text"
               id="adminUser"
               readonly
-              value="admin@localstore.com"
+              value="admin@softwarestore.com"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
             />
           </div>
@@ -253,7 +242,7 @@
               class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 font-semibold"
             >
               <i data-lucide="plus-circle" class="w-5 h-5"></i>
-              Add Product
+              Add Software Product
             </button>
 
             <button
@@ -290,7 +279,7 @@
 
         imageDiv.innerHTML = `
                 <div class="flex items-center justify-between mb-3">
-                    <h4 class="font-medium text-gray-700">Image ${imageCount}</h4>
+                    <h4 class="font-medium text-gray-700">Screenshot ${imageCount}</h4>
                     <button type="button" onclick="removeImageInput(${imageCount})" 
                             class="text-red-600 hover:text-red-800 transition-colors">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -299,7 +288,7 @@
                 
                 <div class="mb-3">
                     <select id="imageType${imageCount}" onchange="toggleImageInput(${imageCount})" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <option value="">Select image source</option>
                         <option value="upload">Upload from device</option>
                         <option value="url">Image URL</option>
@@ -308,16 +297,16 @@
                 
                 <div id="uploadInput${imageCount}" class="hidden">
                     <input type="file" accept="image/*" onchange="previewImage(${imageCount}, this)"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                 </div>
                 
                 <div id="urlInput${imageCount}" class="hidden">
-                    <input type="url" placeholder="https://example.com/image.jpg" onchange="previewImageUrl(${imageCount}, this)"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="url" placeholder="https://example.com/screenshot.jpg" onchange="previewImageUrl(${imageCount}, this)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                 </div>
                 
                 <div id="preview${imageCount}" class="mt-3 hidden">
-                    <img class="w-32 h-32 object-cover rounded-lg border border-gray-200 image-preview" alt="Preview">
+                    <img class="w-full h-32 object-cover rounded-lg border border-gray-200 image-preview" alt="Screenshot Preview">
                 </div>
             `;
 
@@ -389,7 +378,7 @@
 
       function clearForm() {
         if (confirm("Are you sure you want to clear all form data?")) {
-          document.getElementById("productForm").reset();
+          document.getElementById("softwareProductForm").reset();
           document.getElementById("imageContainer").innerHTML = "";
           imageCount = 0;
           document.getElementById("finalPrice").value = "";
@@ -397,7 +386,7 @@
       }
 
       document
-        .getElementById("productForm")
+        .getElementById("softwareProductForm")
         .addEventListener("submit", function (e) {
           e.preventDefault();
 
@@ -407,28 +396,27 @@
             name: document.getElementById("name").value,
             description: document.getElementById("description").value,
             quantity: document.getElementById("quantity").value,
+            accessDuration: document.getElementById("accessDuration").value,
             originalPrice: document.getElementById("originalPrice").value,
             discount: document.getElementById("discount").value,
             finalPrice: document.getElementById("finalPrice").value,
             company: document.getElementById("company").value,
-            category: document.getElementById("category").value,
-            externalLink: document.getElementById("externalLink").value,
             adminUser: document.getElementById("adminUser").value,
             timestamp: new Date().toISOString(),
           };
 
           // Show success message
           alert(
-            "Product added successfully!\n\nProduct: " +
+            "Software product added successfully!\n\nProduct: " +
               formData.name +
-              "\nCategory: " +
-              formData.category +
+              "\nAccess Duration: " +
+              formData.accessDuration +
               "\nPrice: $" +
               formData.finalPrice
           );
 
           // In a real application, you would send this data to your backend
-          console.log("Product Data:", formData);
+          console.log("Software Product Data:", formData);
         });
 
       // Add first image input on page load
@@ -443,7 +431,7 @@
           if (b) {
             var d = b.createElement("script");
             d.innerHTML =
-              "window.__CF$cv$params={r:'96f7ba0060d21190',t:'MTc1NTI1MDc4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+              "window.__CF$cv$params={r:'9700e1e6531f2fe1',t:'MTc1NTM0Njc5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
             b.getElementsByTagName("head")[0].appendChild(d);
           }
         }
