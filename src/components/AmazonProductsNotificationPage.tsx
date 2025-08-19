@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { firestore } from "../firebase";
+import { Bell } from "lucide-react";
 
 type Notification = {
   id: string;
@@ -26,9 +27,27 @@ export default function AmazonProductsNotificationPage() {
   }, []);
 
   return (
-    <div className="p-4 md:p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Amazon Product Notifications</h1>
-      <div className="space-y-4">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+      <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Bell className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-3xl font-bold text-gray-800">
+                  Amazon Product Notifications
+                </h1>
+                <p className="text-sm md:text-base text-gray-600">
+                  Stay updated on your product submissions
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {notifications.length === 0 && (
           <div className="text-gray-500 text-center py-8">
             No notifications yet.
@@ -37,7 +56,7 @@ export default function AmazonProductsNotificationPage() {
         {notifications.map((n) => (
           <div
             key={n.id}
-            className={`p-4 rounded shadow-sm flex items-center space-x-3
+            className={`notification-item bg-white rounded-xl shadow-md border-l-4 border-green-500 p-4 md:p-6
               ${
                 n.status === "approved"
                   ? "bg-green-50 border border-green-300 text-green-700"

@@ -1,16 +1,24 @@
+import { Zap } from "lucide-react";
 import React from "react";
 
 export default function Navbar() {
   return (
-    <nav className="fixed w-full bg-white border-gray-700 shadow-md px-4 py-3 flex items-center justify-center md:justify-start">
-      <span
-        className="
-          text-xl font-bold tracking-widest text-indigo-700
-          md:text-2xl md:ml-2
-        "
-      >
-        Neuraq Store
-      </span>
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
+        <div className="flex justify-between items-center h-16">
+          {/* Brand Logo */}
+          <div className="flex items-center">
+            <div className="flex-shrink-0 flex items-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl md:text-2xl font-bold text-gray-800">
+                Neuraq Store
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </nav>
   );
 }

@@ -3,598 +3,401 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Product Approvals & User Management</title>
+    <title>Dashboard - Sidebar Navigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-      .table-container {
-        overflow-x: auto;
+      .sidebar-transition {
+        transition: transform 0.3s ease-in-out;
       }
-      .action-button {
+      .overlay {
+        transition: opacity 0.3s ease-in-out;
+      }
+      .nav-item {
         transition: all 0.2s ease;
       }
-      .action-button:hover {
-        transform: translateY(-1px);
+      .nav-item:hover {
+        transform: translateX(4px);
       }
     </style>
   </head>
-  <body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
-      <!-- Header -->
-      <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="p-2 bg-blue-100 rounded-lg">
-            <i data-lucide="shield-check" class="w-6 h-6 text-blue-600"></i>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Mobile Overlay -->
+    <div
+      id="overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden overlay"
+    ></div>
+
+    <!-- Sidebar -->
+    <div
+      id="sidebar"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 sidebar-transition"
+    >
+      <!-- Sidebar Header -->
+      <div
+        class="flex items-center justify-between h-16 px-6 border-b border-gray-200"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center"
+          >
+            <i data-lucide="zap" class="w-5 h-5 text-white"></i>
           </div>
-          <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+          <span class="text-lg font-bold text-gray-800">Dashboard</span>
         </div>
-        <p class="text-gray-600">
-          Manage product approvals and user permissions
-        </p>
+        <!-- Close button for mobile -->
+        <button
+          onclick="toggleSidebar()"
+          class="lg:hidden text-gray-500 hover:text-gray-700 p-1 rounded"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
 
-      <!-- Pending Products Approvals Table -->
-      <div class="bg-white rounded-xl shadow-lg mb-8">
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-orange-100 rounded-lg">
-              <i data-lucide="clock" class="w-5 h-5 text-orange-600"></i>
-            </div>
-            <h2 class="text-xl font-bold text-gray-800">
-              Pending Products Approvals
-            </h2>
+      <!-- Navigation Menu -->
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <div class="mb-6">
+          <h3
+            class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3"
+          >
+            Product Management
+          </h3>
+
+          <!-- Product Approvals -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="check-circle"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Product Approvals
             <span
-              class="bg-orange-100 text-orange-800 text-sm font-medium px-2.5 py-0.5 rounded-full"
-              >5 Pending</span
+              class="ml-auto bg-orange-100 text-orange-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >5</span
             >
+          </a>
+
+          <!-- Amazon Products -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="shopping-bag"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Amazon Products
+            <span
+              class="ml-auto bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >142</span
+            >
+          </a>
+
+          <!-- Local Products -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="map-pin"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Local Products
+            <span
+              class="ml-auto bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >28</span
+            >
+          </a>
+
+          <!-- Software Products -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="code"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Software Products
+            <span
+              class="ml-auto bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >67</span
+            >
+          </a>
+        </div>
+
+        <!-- Additional Navigation Items -->
+        <div class="mb-6">
+          <h3
+            class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3"
+          >
+            Management
+          </h3>
+
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="users"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            User Management
+          </a>
+
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="bar-chart-3"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Analytics
+          </a>
+
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="settings"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Settings
+          </a>
+        </div>
+      </nav>
+
+      <!-- User Info and Logout at Bottom -->
+      <div class="border-t border-gray-200 p-4">
+        <!-- User Profile -->
+        <div class="flex items-center mb-4">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+          >
+            JD
+          </div>
+          <div class="ml-3 flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">John Doe</p>
+            <p class="text-xs text-gray-500 truncate">john.doe@neuraq.com</p>
           </div>
         </div>
 
-        <div class="table-container">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Collection
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Title
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Name
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Quantity
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Final Price
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Created By
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                  >
-                    Electronics
-                  </span>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                >
-                  Wireless Headphones Pro
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  SoundMax Pro X1
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  25
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
-                >
-                  $149.99
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  john.doe@store.com
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="approveProduct(1)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
-                    Approve
-                  </button>
-                  <button
-                    onclick="rejectProduct(1)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
-                  >
-                    Software
-                  </span>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                >
-                  Project Management Suite
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  TaskFlow Pro
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  100
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
-                >
-                  $299.00
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  sarah.wilson@tech.com
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="approveProduct(2)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
-                    Approve
-                  </button>
-                  <button
-                    onclick="rejectProduct(2)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                  >
-                    Clothing
-                  </span>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                >
-                  Premium Cotton T-Shirt
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  ComfortWear Basic
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  50
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
-                >
-                  $24.99
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  mike.chen@fashion.com
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="approveProduct(3)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
-                    Approve
-                  </button>
-                  <button
-                    onclick="rejectProduct(3)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
-                  >
-                    Home & Garden
-                  </span>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                >
-                  Smart Garden Kit
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  GrowSmart Indoor
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  15
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
-                >
-                  $89.99
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  lisa.park@garden.com
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="approveProduct(4)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
-                    Approve
-                  </button>
-                  <button
-                    onclick="rejectProduct(4)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
-                  >
-                    Sports
-                  </span>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                >
-                  Fitness Tracker Pro
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  FitBand Elite
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  30
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600"
-                >
-                  $199.99
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  alex.rodriguez@sports.com
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="approveProduct(5)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <i data-lucide="check" class="w-3 h-3 mr-1"></i>
-                    Approve
-                  </button>
-                  <button
-                    onclick="rejectProduct(5)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <i data-lucide="x" class="w-3 h-3 mr-1"></i>
-                    Reject
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Logout Button -->
+        <button
+          onclick="logout()"
+          class="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors duration-200"
+        >
+          <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="lg:ml-64">
+      <!-- Top Navigation Bar for Mobile -->
+      <div
+        class="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3"
+      >
+        <div class="flex items-center justify-between">
+          <button
+            onclick="toggleSidebar()"
+            class="text-gray-500 hover:text-gray-700 p-2 rounded-lg"
+          >
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded flex items-center justify-center"
+            >
+              <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+            </div>
+            <span class="text-lg font-bold text-gray-800">Dashboard</span>
+          </div>
+          <div class="w-10"></div>
+          <!-- Spacer for centering -->
         </div>
       </div>
 
-      <!-- Users Table -->
-      <div class="bg-white rounded-xl shadow-lg">
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-indigo-100 rounded-lg">
-              <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+      <!-- Page Content -->
+      <div class="p-4 md:p-6 lg:p-8">
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6 md:mb-8">
+          <div
+            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
+            <div>
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                Welcome back, John!
+              </h1>
+              <p class="text-gray-600">
+                Here's what's happening with your products today.
+              </p>
             </div>
-            <h2 class="text-xl font-bold text-gray-800">Users Management</h2>
-            <span
-              class="bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded-full"
-              >8 Users</span
-            >
+            <div class="flex items-center gap-3">
+              <div
+                class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+              >
+                <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>
+                Today
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="table-container">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  User
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Current Role
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Change Role
-                </th>
-                <th
-                  class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div
-                        class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold"
-                      >
-                        JD
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
-                        John Doe
-                      </div>
-                      <div class="text-sm text-gray-500">
-                        john.doe@example.com
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                  >
-                    Admin
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <select
-                    id="roleSelect1"
-                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="admin" selected>Admin</option>
-                    <option value="moderator">Moderator</option>
-                    <option value="user">User</option>
-                  </select>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="submitRoleChange(1)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
-                    Submit
-                  </button>
-                  <button
-                    onclick="cancelRoleChange(1)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div
-                        class="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold"
-                      >
-                        SW
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
-                        Sarah Wilson
-                      </div>
-                      <div class="text-sm text-gray-500">
-                        sarah.wilson@example.com
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
-                  >
-                    Moderator
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <select
-                    id="roleSelect2"
-                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="moderator" selected>Moderator</option>
-                    <option value="user">User</option>
-                  </select>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="submitRoleChange(2)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
-                    Submit
-                  </button>
-                  <button
-                    onclick="cancelRoleChange(2)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div
-                        class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold"
-                      >
-                        MC
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
-                        Mike Chen
-                      </div>
-                      <div class="text-sm text-gray-500">
-                        mike.chen@example.com
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                  >
-                    User
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <select
-                    id="roleSelect3"
-                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="moderator">Moderator</option>
-                    <option value="user" selected>User</option>
-                  </select>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="submitRoleChange(3)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
-                    Submit
-                  </button>
-                  <button
-                    onclick="cancelRoleChange(3)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div
-                        class="h-10 w-10 rounded-full bg-pink-500 flex items-center justify-center text-white font-semibold"
-                      >
-                        LP
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
-                        Lisa Park
-                      </div>
-                      <div class="text-sm text-gray-500">
-                        lisa.park@example.com
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                  >
-                    User
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <select
-                    id="roleSelect4"
-                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="moderator">Moderator</option>
-                    <option value="user" selected>User</option>
-                  </select>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
-                >
-                  <button
-                    onclick="submitRoleChange(4)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
-                    Submit
-                  </button>
-                  <button
-                    onclick="cancelRoleChange(4)"
-                    class="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Stats Cards -->
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
+        >
+          <!-- Product Approvals Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Pending Approvals
+                </p>
+                <p class="text-2xl font-bold text-gray-900">5</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
+              >
+                <i
+                  data-lucide="check-circle"
+                  class="w-6 h-6 text-orange-600"
+                ></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-orange-600 font-medium"
+                >Requires attention</span
+              >
+            </div>
+          </div>
+
+          <!-- Amazon Products Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Amazon Products</p>
+                <p class="text-2xl font-bold text-gray-900">142</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+              >
+                <i
+                  data-lucide="shopping-bag"
+                  class="w-6 h-6 text-green-600"
+                ></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-green-600 font-medium"
+                >+12 this week</span
+              >
+            </div>
+          </div>
+
+          <!-- Local Products Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Local Products</p>
+                <p class="text-2xl font-bold text-gray-900">28</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <i data-lucide="map-pin" class="w-6 h-6 text-blue-600"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-blue-600 font-medium"
+                >+3 this week</span
+              >
+            </div>
+          </div>
+
+          <!-- Software Products Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Software Products
+                </p>
+                <p class="text-2xl font-bold text-gray-900">67</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+              >
+                <i data-lucide="code" class="w-6 h-6 text-purple-600"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-purple-600 font-medium"
+                >+8 this week</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+          <h2 class="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
+          <div class="space-y-4">
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center"
+              >
+                <i data-lucide="check" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">
+                  Product "Wireless Headphones" approved
+                </p>
+                <p class="text-xs text-gray-500">2 minutes ago</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"
+              >
+                <i data-lucide="plus" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">
+                  New software product added
+                </p>
+                <p class="text-xs text-gray-500">15 minutes ago</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center"
+              >
+                <i data-lucide="clock" class="w-5 h-5 text-orange-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">
+                  Product "Smart Watch" pending approval
+                </p>
+                <p class="text-xs text-gray-500">1 hour ago</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -603,104 +406,91 @@
       // Initialize Lucide icons
       lucide.createIcons();
 
-      // Product approval functions
-      function approveProduct(productId) {
-        if (confirm("Are you sure you want to approve this product?")) {
-          // In a real application, you would send this to your backend
-          alert(`Product ${productId} has been approved successfully!`);
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
 
-          // Remove the row from the table (simulate approval)
-          const row = event.target.closest("tr");
-          row.style.backgroundColor = "#dcfce7";
-          setTimeout(() => {
-            row.remove();
-          }, 1000);
+        if (sidebar.classList.contains("-translate-x-full")) {
+          // Show sidebar
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.remove("hidden");
+        } else {
+          // Hide sidebar
+          sidebar.classList.add("-translate-x-full");
+          overlay.classList.add("hidden");
         }
       }
 
-      function rejectProduct(productId) {
-        const reason = prompt("Please provide a reason for rejection:");
-        if (reason && reason.trim() !== "") {
-          // In a real application, you would send this to your backend
-          alert(`Product ${productId} has been rejected.\nReason: ${reason}`);
+      function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+          // Show loading state
+          const button = event.target.closest("button");
+          const originalContent = button.innerHTML;
+          button.innerHTML =
+            '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Logging out...';
+          button.disabled = true;
 
-          // Remove the row from the table (simulate rejection)
-          const row = event.target.closest("tr");
-          row.style.backgroundColor = "#fecaca";
+          // Reinitialize icons for the new loader icon
+          lucide.createIcons();
+
+          // Simulate logout process
           setTimeout(() => {
-            row.remove();
-          }, 1000);
+            alert("You have been logged out successfully.");
+            // In a real application, you would redirect to login page
+            // window.location.href = '/login';
+
+            // Reset button for demo purposes
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            lucide.createIcons();
+          }, 2000);
         }
       }
 
-      // User role management functions
-      function submitRoleChange(userId) {
-        const select = document.getElementById(`roleSelect${userId}`);
-        const newRole = select.value;
-        const userName = select
-          .closest("tr")
-          .querySelector(".text-sm.font-medium.text-gray-900").textContent;
+      // Close sidebar when clicking overlay
+      document
+        .getElementById("overlay")
+        .addEventListener("click", toggleSidebar);
 
-        if (
-          confirm(
-            `Are you sure you want to change ${userName}'s role to ${newRole}?`
-          )
-        ) {
-          // In a real application, you would send this to your backend
-          alert(
-            `${userName}'s role has been successfully changed to ${newRole}!`
-          );
+      // Handle window resize
+      window.addEventListener("resize", function () {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
 
-          // Update the current role badge
-          const roleBadge = select
-            .closest("tr")
-            .querySelector("td:nth-child(2) span");
-          roleBadge.textContent =
-            newRole.charAt(0).toUpperCase() + newRole.slice(1);
-
-          // Update badge color based on role
-          roleBadge.className =
-            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ";
-          if (newRole === "admin") {
-            roleBadge.className += "bg-green-100 text-green-800";
-          } else if (newRole === "moderator") {
-            roleBadge.className += "bg-yellow-100 text-yellow-800";
-          } else {
-            roleBadge.className += "bg-gray-100 text-gray-800";
+        if (window.innerWidth >= 1024) {
+          // Desktop: always show sidebar, hide overlay
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.add("hidden");
+        } else {
+          // Mobile/Tablet: hide sidebar by default
+          if (!sidebar.classList.contains("-translate-x-full")) {
+            sidebar.classList.add("-translate-x-full");
+            overlay.classList.add("hidden");
           }
-
-          // Flash the row to indicate success
-          const row = select.closest("tr");
-          row.style.backgroundColor = "#dcfce7";
-          setTimeout(() => {
-            row.style.backgroundColor = "";
-          }, 1000);
         }
-      }
+      });
 
-      function cancelRoleChange(userId) {
-        const select = document.getElementById(`roleSelect${userId}`);
-        const currentRoleBadge = select
-          .closest("tr")
-          .querySelector("td:nth-child(2) span");
-        const currentRole = currentRoleBadge.textContent.toLowerCase();
-
-        // Reset the select to the current role
-        select.value = currentRole;
-
-        alert("Role change has been cancelled.");
-      }
-
-      // Add some interactive feedback
+      // Add active state to navigation items
       document.addEventListener("DOMContentLoaded", function () {
-        // Add hover effects to table rows
-        const tableRows = document.querySelectorAll("tbody tr");
-        tableRows.forEach((row) => {
-          row.addEventListener("mouseenter", function () {
-            this.style.transform = "translateX(2px)";
-          });
-          row.addEventListener("mouseleave", function () {
-            this.style.transform = "translateX(0)";
+        const navItems = document.querySelectorAll("nav a");
+        navItems.forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            // Remove active class from all items
+            navItems.forEach((nav) => {
+              nav.classList.remove("bg-blue-100", "text-blue-700");
+              nav.classList.add("text-gray-700");
+            });
+
+            // Add active class to clicked item
+            this.classList.remove("text-gray-700");
+            this.classList.add("bg-blue-100", "text-blue-700");
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 1024) {
+              toggleSidebar();
+            }
           });
         });
       });
@@ -712,7 +502,541 @@
           if (b) {
             var d = b.createElement("script");
             d.innerHTML =
-              "window.__CF$cv$params={r:'9711031a8202ffaa',t:'MTc1NTUxNTkyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+              "window.__CF$cv$params={r:'971942e8b0cc72c9',t:'MTc1NTYwMjQyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+            b.getElementsByTagName("head")[0].appendChild(d);
+          }
+        }
+        if (document.body) {
+          var a = document.createElement("iframe");
+          a.height = 1;
+          a.width = 1;
+          a.style.position = "absolute";
+          a.style.top = 0;
+          a.style.left = 0;
+          a.style.border = "none";
+          a.style.visibility = "hidden";
+          document.body.appendChild(a);
+          if ("loading" !== document.readyState) c();
+          else if (window.addEventListener)
+            document.addEventListener("DOMContentLoaded", c);
+          else {
+            var e = document.onreadystatechange || function () {};
+            document.onreadystatechange = function (b) {
+              e(b);
+              "loading" !== document.readyState &&
+                ((document.onreadystatechange = e), c());
+            };
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Sidebar Navigation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+      .sidebar-transition {
+        transition: transform 0.3s ease-in-out;
+      }
+      .overlay {
+        transition: opacity 0.3s ease-in-out;
+      }
+      .nav-item {
+        transition: all 0.2s ease;
+      }
+      .nav-item:hover {
+        transform: translateX(4px);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Mobile Overlay -->
+    <div
+      id="overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden overlay"
+    ></div>
+
+    <!-- Sidebar -->
+    <div
+      id="sidebar"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 sidebar-transition"
+    >
+      <!-- Sidebar Header -->
+      <div
+        class="flex items-center justify-between h-16 px-6 border-b border-gray-200"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center"
+          >
+            <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="text-lg font-bold text-gray-800">Dashboard</span>
+        </div>
+        <!-- Close button for mobile -->
+        <button
+          onclick="toggleSidebar()"
+          class="lg:hidden text-gray-500 hover:text-gray-700 p-1 rounded"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <div class="mb-6">
+          <h3
+            class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3"
+          >
+            Product Management
+          </h3>
+
+          <!-- Product Approvals -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="check-circle"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Product Approvals
+            <span
+              class="ml-auto bg-orange-100 text-orange-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >5</span
+            >
+          </a>
+
+          <!-- Amazon Products -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="shopping-bag"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Amazon Products
+            <span
+              class="ml-auto bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >142</span
+            >
+          </a>
+
+          <!-- Local Products -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="map-pin"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Local Products
+            <span
+              class="ml-auto bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >28</span
+            >
+          </a>
+
+          <!-- Software Products -->
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="code"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Software Products
+            <span
+              class="ml-auto bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded-full"
+              >67</span
+            >
+          </a>
+        </div>
+
+        <!-- Additional Navigation Items -->
+        <div class="mb-6">
+          <h3
+            class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3"
+          >
+            Management
+          </h3>
+
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="users"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            User Management
+          </a>
+
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="bar-chart-3"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Analytics
+          </a>
+
+          <a
+            href="#"
+            class="nav-item flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 group"
+          >
+            <i
+              data-lucide="settings"
+              class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600"
+            ></i>
+            Settings
+          </a>
+        </div>
+      </nav>
+
+      <!-- User Info and Logout at Bottom -->
+      <div class="border-t border-gray-200 p-4">
+        <!-- User Profile -->
+        <div class="flex items-center mb-4">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+          >
+            JD
+          </div>
+          <div class="ml-3 flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">John Doe</p>
+            <p class="text-xs text-gray-500 truncate">john.doe@neuraq.com</p>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <button
+          onclick="logout()"
+          class="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors duration-200"
+        >
+          <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="lg:ml-64">
+      <!-- Top Navigation Bar for Mobile -->
+      <div
+        class="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3"
+      >
+        <div class="flex items-center justify-between">
+          <button
+            onclick="toggleSidebar()"
+            class="text-gray-500 hover:text-gray-700 p-2 rounded-lg"
+          >
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-6 h-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded flex items-center justify-center"
+            >
+              <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+            </div>
+            <span class="text-lg font-bold text-gray-800">Dashboard</span>
+          </div>
+          <div class="w-10"></div>
+          <!-- Spacer for centering -->
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="p-4 md:p-6 lg:p-8">
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6 md:mb-8">
+          <div
+            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
+            <div>
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                Welcome back, John!
+              </h1>
+              <p class="text-gray-600">
+                Here's what's happening with your products today.
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div
+                class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+              >
+                <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>
+                Today
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
+        >
+          <!-- Product Approvals Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Pending Approvals
+                </p>
+                <p class="text-2xl font-bold text-gray-900">5</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
+              >
+                <i
+                  data-lucide="check-circle"
+                  class="w-6 h-6 text-orange-600"
+                ></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-orange-600 font-medium"
+                >Requires attention</span
+              >
+            </div>
+          </div>
+
+          <!-- Amazon Products Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Amazon Products</p>
+                <p class="text-2xl font-bold text-gray-900">142</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+              >
+                <i
+                  data-lucide="shopping-bag"
+                  class="w-6 h-6 text-green-600"
+                ></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-green-600 font-medium"
+                >+12 this week</span
+              >
+            </div>
+          </div>
+
+          <!-- Local Products Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Local Products</p>
+                <p class="text-2xl font-bold text-gray-900">28</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <i data-lucide="map-pin" class="w-6 h-6 text-blue-600"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-blue-600 font-medium"
+                >+3 this week</span
+              >
+            </div>
+          </div>
+
+          <!-- Software Products Card -->
+          <div
+            class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Software Products
+                </p>
+                <p class="text-2xl font-bold text-gray-900">67</p>
+              </div>
+              <div
+                class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+              >
+                <i data-lucide="code" class="w-6 h-6 text-purple-600"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-sm text-purple-600 font-medium"
+                >+8 this week</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+          <h2 class="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
+          <div class="space-y-4">
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center"
+              >
+                <i data-lucide="check" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">
+                  Product "Wireless Headphones" approved
+                </p>
+                <p class="text-xs text-gray-500">2 minutes ago</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"
+              >
+                <i data-lucide="plus" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">
+                  New software product added
+                </p>
+                <p class="text-xs text-gray-500">15 minutes ago</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center"
+              >
+                <i data-lucide="clock" class="w-5 h-5 text-orange-600"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">
+                  Product "Smart Watch" pending approval
+                </p>
+                <p class="text-xs text-gray-500">1 hour ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Initialize Lucide icons
+      lucide.createIcons();
+
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+
+        if (sidebar.classList.contains("-translate-x-full")) {
+          // Show sidebar
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.remove("hidden");
+        } else {
+          // Hide sidebar
+          sidebar.classList.add("-translate-x-full");
+          overlay.classList.add("hidden");
+        }
+      }
+
+      function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+          // Show loading state
+          const button = event.target.closest("button");
+          const originalContent = button.innerHTML;
+          button.innerHTML =
+            '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Logging out...';
+          button.disabled = true;
+
+          // Reinitialize icons for the new loader icon
+          lucide.createIcons();
+
+          // Simulate logout process
+          setTimeout(() => {
+            alert("You have been logged out successfully.");
+            // In a real application, you would redirect to login page
+            // window.location.href = '/login';
+
+            // Reset button for demo purposes
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            lucide.createIcons();
+          }, 2000);
+        }
+      }
+
+      // Close sidebar when clicking overlay
+      document
+        .getElementById("overlay")
+        .addEventListener("click", toggleSidebar);
+
+      // Handle window resize
+      window.addEventListener("resize", function () {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+
+        if (window.innerWidth >= 1024) {
+          // Desktop: always show sidebar, hide overlay
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.add("hidden");
+        } else {
+          // Mobile/Tablet: hide sidebar by default
+          if (!sidebar.classList.contains("-translate-x-full")) {
+            sidebar.classList.add("-translate-x-full");
+            overlay.classList.add("hidden");
+          }
+        }
+      });
+
+      // Add active state to navigation items
+      document.addEventListener("DOMContentLoaded", function () {
+        const navItems = document.querySelectorAll("nav a");
+        navItems.forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            // Remove active class from all items
+            navItems.forEach((nav) => {
+              nav.classList.remove("bg-blue-100", "text-blue-700");
+              nav.classList.add("text-gray-700");
+            });
+
+            // Add active class to clicked item
+            this.classList.remove("text-gray-700");
+            this.classList.add("bg-blue-100", "text-blue-700");
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 1024) {
+              toggleSidebar();
+            }
+          });
+        });
+      });
+    </script>
+    <script>
+      (function () {
+        function c() {
+          var b = a.contentDocument || a.contentWindow.document;
+          if (b) {
+            var d = b.createElement("script");
+            d.innerHTML =
+              "window.__CF$cv$params={r:'971942e8b0cc72c9',t:'MTc1NTYwMjQyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
             b.getElementsByTagName("head")[0].appendChild(d);
           }
         }
