@@ -1,5 +1,14 @@
 import React from "react";
-import { Box, ShoppingCart, Package, Cpu, LogOut } from "lucide-react";
+import {
+  Box,
+  ShoppingCart,
+  Package,
+  Cpu,
+  LogOut,
+  CheckCircle,
+  ShoppingBag,
+  Code,
+} from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type NavItem = {
@@ -22,26 +31,26 @@ const navItems: NavItem[] = [
   {
     key: "approvals",
     label: "Product Approvals",
-    icon: Box,
-    gradient: "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500",
+    icon: CheckCircle,
+    gradient: "w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600",
   },
   {
     key: "amazon",
     label: "Amazon Products",
-    icon: ShoppingCart,
-    gradient: "bg-gradient-to-r from-green-400 via-blue-500 to-purple-600",
+    icon: ShoppingBag,
+    gradient: "w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600",
   },
   {
     key: "local",
     label: "Local Products",
     icon: Package,
-    gradient: "bg-gradient-to-r from-yellow-400 via-red-400 to-pink-400",
+    gradient: "w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600",
   },
   {
     key: "software",
     label: "Software Products",
-    icon: Cpu,
-    gradient: "bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400",
+    icon: Code,
+    gradient: "w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600",
   },
 ];
 
@@ -92,51 +101,56 @@ export default function Sidebar({
       </div>
 
       {/* Nav modules */}
-      <nav className="flex-grow px-4 py-6 overflow-y-auto space-y-3">
-        {navItems.map(({ key, label, icon: Icon, gradient }) => {
-          const isActive = activeModule === key;
+      <nav className="flex-1 px-4 py-6 space-y-2">
+        <div className="mb-6">
+          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Product Management
+          </h3>
+          {navItems.map(({ key, label, icon: Icon, gradient }) => {
+            const isActive = activeModule === key;
 
-          return (
-            <button
-              key={key}
-              aria-current={isActive ? "page" : undefined}
-              onClick={() => {
-                setActiveModule(key);
-                toggleSidebar(); // close sidebar on mobile/md after selecting
-              }}
-              className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
-                focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500
+            return (
+              <button
+                key={key}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => {
+                  setActiveModule(key);
+                  toggleSidebar(); // close sidebar on mobile/md after selecting
+                }}
+                className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
+                focus:outline-none focus:bg-indigo-100
                 ${
                   isActive
-                    ? `text-white ${gradient}`
-                    : "text-gray-700 hover:bg-indigo-100"
+                    ? `text-gray-700 hover:bg-indigo-50`
+                    : "text-gray-700 hover:bg-indigo-50"
                 }
               `}
-            >
-              <span
-                className={`p-1 rounded-md ${
-                  isActive ? "bg-white/30" : "bg-transparent"
-                }`}
               >
-                <Icon size={20} />
-              </span>
-              <span>{label}</span>
-            </button>
-          );
-        })}
+                <span
+                  className={`p-1 rounded-md ${
+                    isActive ? "bg-white/30" : "bg-transparent"
+                  }`}
+                >
+                  <Icon size={20} />
+                </span>
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Sticky User Info & Logout at bottom */}
       <div className="sticky bottom-0 px-4 py-4 border-t border-gray-200 bg-white">
-        <div className="text-gray-700 mb-2 break-words">
+        <div className="text-sm font-medium text-gray-900 truncate">
           Logged in as: <strong>{user.email ?? "Guest"}</strong>
         </div>
         <button
           onClick={onLogout}
-          className="w-full py-2 px-3 bg-red-600 text-white rounded hover:bg-red-700 transition"
+          className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors duration-200"
         >
           <div className="flex items-center justify-center space-x-2">
-            <LogOut size={20} />
+            <LogOut className="w-4 h-4 mr-2" />
             <span>Logout</span>
           </div>
         </button>
