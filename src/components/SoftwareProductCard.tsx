@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PenSquare, Trash2, Eye, EyeOff } from "lucide-react";
+import { PenSquare, Trash2, Eye, EyeOff, Edit } from "lucide-react";
 
 function formatPrice(val: unknown) {
   if (typeof val !== "number" || isNaN(val)) return "N/A";
@@ -20,59 +20,65 @@ export default function SoftwareProductCard({
   return (
     <>
       {/* Card */}
-      <div
-        className="bg-white rounded-lg shadow-lg p-4 flex flex-col justify-between
-        transition-all duration-300 hover:shadow-xl hover:scale-105 hover:-translate-y-1"
-      >
-        {/* Image with fallback */}
-        {product.images ? (
-          <img
-            src={product.images}
-            alt={product.name}
-            className="w-full object-contain rounded mb-3"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/no-image.png"; // Placeholder if missing
-            }}
-          />
-        ) : null}
+      {/* Product Card */}
+      <div className="card-hover bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Image Container */}
+        <div className="relative aspect-square">
+          <div className=" w-full h-full flex items-center justify-center">
+            {product.images ? (
+              <img
+                src={product.images}
+                alt={product.name}
+                className="w-full object-contain rounded mb-3"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/no-image.png"; // Placeholder if missing
+                }}
+              />
+            ) : null}
+            {/* Price */}
+            {product.finalPrice !== undefined && (
+              <div className="absolute top-3 right-3">
+                <span className="price-badge px-3 py-1 text-white text-sm font-bold rounded-full">
+                  {formatPrice(product.finalPrice)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Name */}
-        <h6 className="text-lg font-semibold truncate">{product.name}</h6>
-
-        {/* Price */}
-        {product.finalPrice !== undefined && (
-          <p className="text-gray-800 font-medium">
-            {formatPrice(product.finalPrice)}
-          </p>
-        )}
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+            {product.name}
+          </h3>
+        </div>
 
         {/* Buttons */}
-        <div className="flex space-x-3 mt-3">
-          <button
-            onClick={() => onEdit(product)}
-            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-            title="Edit"
-          >
-            <PenSquare size={16} />
-            <span>Edit</span>
-          </button>
-          <button
-            onClick={() => onDelete(product.id)}
-            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-red-100 text-red-800 hover:bg-red-200"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-            <span>Delete</span>
-          </button>
-          <button
-            onClick={() => setShowPopup(true)}
-            className="flex items-center space-x-1 px-3 py-1 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200"
-            title="View details"
-          >
-            <Eye size={16} />
-            <span>View</span>
-          </button>
+        <div className="flex items-center justify-between p-2">
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onEdit(product)}
+              className="action-btn p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
+              title="Edit"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onDelete(product.id)}
+              className="action-btn p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+              title="Delete"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowPopup(true)}
+              className="action-btn p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+              title="View details"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 

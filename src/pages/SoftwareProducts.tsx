@@ -652,28 +652,29 @@ export default function SoftwareProducts() {
             </div>
           </form>
         </div>
-      </div>
 
-      {/* Products List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:overflow-x-auto">
-        {products.map((prod) => (
-          <SoftwareProductCard
-            key={prod.id}
-            product={prod}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
-        {products.length === 0 && (
-          <tr>
-            <td
-              colSpan={8}
-              className="text-center py-6 text-gray-500 text-sm md:text-base"
-            >
-              No approved products found.
-            </td>
-          </tr>
-        )}
+        {/* Products List */}
+        <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {products.map((prod) => (
+                <SoftwareProductCard
+                  key={prod.id}
+                  product={prod}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center py-6 text-gray-500">
+                    No approved products found.
+                  </td>
+                </tr>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
