@@ -11,6 +11,8 @@ import {
   ShoppingCart,
   Share2,
   Heart,
+  UserCheck,
+  UserPlus,
 } from "lucide-react"; // Update with actual placeholder path
 
 function formatPrice(val: unknown) {
@@ -98,7 +100,7 @@ export default function AmazonProductCard({
 
       {/* Modal */}
       {showPopup && (
-        <div className="fixed ml-64 mt-18 inset-0 z-50 flex items-center justify-center p-4 ">
+        <div className="fixed ml-64 mt-18 inset-0 z-50 flex items-center justify-center p-4">
           <div className=" bg-white rounded-2xl shadow-xl overflow-hidden relative w-full max-w-[60vw]  max-h-[90vh] p-6 overflow-y-auto ">
             {/* Close */}
             <div className="flex justify-end">
@@ -205,10 +207,7 @@ export default function AmazonProductCard({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-2">
                       <div className="flex items-center text-gray-600">
-                        <i
-                          data-lucide="user-plus"
-                          className="w-4 h-4 mr-2 text-blue-500"
-                        ></i>
+                        <UserPlus className="w-4 h-4 mr-2 text-blue-500" />
                         <span className="font-medium">Created by:</span>
                       </div>
                       <div className="ml-6 text-gray-800">
@@ -217,10 +216,7 @@ export default function AmazonProductCard({
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center text-gray-600">
-                        <i
-                          data-lucide="user-check"
-                          className="w-4 h-4 mr-2 text-green-500"
-                        ></i>
+                        <UserCheck className="w-4 h-4 mr-2 text-green-500" />
                         <span className="font-medium">Modified by:</span>
                       </div>
                       <div className="ml-6 text-gray-800">
