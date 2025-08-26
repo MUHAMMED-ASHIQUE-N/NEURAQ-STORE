@@ -46,7 +46,8 @@ export default function SoftwareProductCard({
                 className="w-full object-contain rounded mb-3"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/no-image.png"; // Placeholder if missing
+                  e.currentTarget.src =
+                    "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"; // Placeholder if missing
                 }}
               />
             ) : null}
@@ -123,7 +124,8 @@ export default function SoftwareProductCard({
                       className="w-80 h-80 justify-left object-contain rounded"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/no-image.png";
+                        e.currentTarget.src =
+                          "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
                       }}
                     />
                   ) : null}

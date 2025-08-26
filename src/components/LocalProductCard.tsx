@@ -46,7 +46,8 @@ export default function LocalProductCard({
                 className="w-full object-contain rounded mb-3"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/no-image.png"; // placeholder path
+                  e.currentTarget.src =
+                    "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"; // placeholder path
                 }}
               />
             ) : null}
@@ -124,7 +125,8 @@ export default function LocalProductCard({
                       className="w-80 h-80 justify-left object-contain rounded"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/no-image.png";
+                        e.currentTarget.src =
+                          "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
                       }}
                     />
                   ) : null}

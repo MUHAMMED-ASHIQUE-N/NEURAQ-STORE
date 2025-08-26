@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Plus,
   CheckSquare,
@@ -104,6 +104,7 @@ export default function AmazonProducts() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Load only approved products
@@ -280,14 +281,13 @@ export default function AmazonProducts() {
         : [{ type: "url", value: "" }]
     );
     setErrors({});
+    titleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleDelete(id: string) {
-    if (window.confirm("Delete product?")) {
-      setProducts((prods) => prods.filter((p) => p.id !== id));
-      if (editingId === id) resetForm();
-      // Deletion in Firestore should be handled here too if desired
-    }
+    // Firestore deletion should be handled here too if desired
+    setProducts((prods) => prods.filter((p) => p.id !== id));
+    if (editingId === id) resetForm();
   }
 
   // --- Responsive modified JSX return ---
@@ -304,7 +304,7 @@ export default function AmazonProducts() {
             Amazon Product Management
           </h1>
         </div>
-        <p className="text-gray-600">
+        <p ref={titleRef} className="text-gray-600">
           Add and manage your Amazon product listings
         </p>
       </div>

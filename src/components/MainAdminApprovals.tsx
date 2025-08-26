@@ -8,7 +8,10 @@ import {
   updateDoc,
   addDoc,
   serverTimestamp,
+  getFirestore,
+  setDoc,
 } from "firebase/firestore";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { firestore } from "../firebase";
 import {
   CheckCircle2,
@@ -20,6 +23,10 @@ import {
   Clock,
   Users,
   CheckCircle,
+  UserPlus,
+  Mail,
+  Lock,
+  Eye,
 } from "lucide-react";
 
 type Product = {
@@ -55,6 +62,53 @@ export default function MainAdminApprovals() {
   const [users, setUsers] = useState<User[]>([]);
   const [roleEdits, setRoleEdits] = useState<RoleEdits>({});
   const [loadingActionIds, setLoadingActionIds] = useState<string[]>([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("main-admin");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const roleOptions = [
+    { value: "user", label: "User" },
+    { value: "main-admin", label: "Main Admin" },
+    { value: "amazon-semi-admin", label: "Amazon Semi-Admin" },
+    { value: "local-semi-admin", label: "Local Semi-Admin" },
+    { value: "software-semi-admin", label: "Software Semi-Admin" },
+  ];
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(false);
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const db = getFirestore();
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await setDoc(doc(db, "users", currentUser.uid), {
+          email: currentUser.email,
+          role,
+          createdAt: serverTimestamp(),
+        });
+      }
+      // Reset or give feedback as needed here
+    } catch (error: any) {
+      if (error.code === "auth/email-already-in-use") {
+        setError(
+          "This email address is already registered. Please log in instead."
+        );
+      } else {
+        setError("Registration failed: " + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch pending products from all 3 collections
   useEffect(() => {
@@ -198,7 +252,11 @@ export default function MainAdminApprovals() {
       setLoadingActionIds((ids) => ids.filter((id) => id !== userId));
     }
   }
-
+  const handleCancel = () => {
+    setEmail("");
+    setPassword("");
+    setRole("main-admin");
+  };
   const isLoading = (id: string) => loadingActionIds.includes(id);
 
   return (
@@ -218,6 +276,111 @@ export default function MainAdminApprovals() {
             Manage product approvals and user permissions
           </p>
         </div>
+
+        <div className="bg-white rounded-xl shadow-lg mb-8">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <UserPlus className="w-5 h-5 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Create New Admin User
+              </h2>
+            </div>
+          </div>
+          <form onSubmit={handleRegister} className="space-y-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 ml-2">
+              <div>
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    className="w-full pl-10 pr-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all mb-2"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="password"
+                    className="w-full pl-10 pr-12 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    <Eye id="passwordEyeIcon" className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Role
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  required
+                >
+                  {roleOptions.map((opt) => (
+                    <option value={opt.value} key={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center space-x-2 mt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="action-button inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  title="Submit Role Change"
+                >
+                  <CheckCircle className="w-9 h-9 mr-1" />
+                  <span>Submit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="action-button inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  <XCircle className="w-9 h-9 mr-1" />
+                  <span>Cancel</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
         {/* Products Pending Approval Table */}
         <div className="bg-white rounded-xl shadow-lg mb-8">
           <div className="p-6 border-b border-gray-200">
