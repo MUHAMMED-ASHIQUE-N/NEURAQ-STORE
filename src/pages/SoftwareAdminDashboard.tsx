@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import SoftwareSidebar from "../components/SoftwareSidebar";
 import SoftwareProducts from "./SoftwareProducts";
-import SoftwareProductsNotificationPage from "../components/SoftwareProductsNotificationPage";
-import SoftwareSemiAdminApprovalsPage from "../components/CreateSoftwareSemiAdmin"; // NEW
+import SoftwareProductsNotificationPage from "../components/SoftwareProductsNotificationPage"; // NEW
 import { useUser } from "../contexts/UserContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
+import ListedSoftwareProducts from "../components/ListedSoftwareProducts";
 
 export default function SoftwareAdminDashboard() {
   const user = useUser();
@@ -69,7 +69,7 @@ export default function SoftwareAdminDashboard() {
           {activeNav === "notifications" && (
             <SoftwareProductsNotificationPage />
           )}
-          {activeNav === "approvals" && <SoftwareSemiAdminApprovalsPage />}
+          {activeNav === "listed-products" && <ListedSoftwareProducts />}
         </main>
       </div>
     </div>

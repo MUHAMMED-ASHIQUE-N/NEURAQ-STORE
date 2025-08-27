@@ -1,5 +1,12 @@
 import React from "react";
-import { Cpu, ShieldCheck, ClipboardCheck, LogOut, Code } from "lucide-react";
+import {
+  Cpu,
+  ShieldCheck,
+  ClipboardCheck,
+  LogOut,
+  Code,
+  Barcode,
+} from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
@@ -102,20 +109,22 @@ export default function SoftwareSidebar({
             {/* Pending Approvals */}
             <button
               onClick={() => {
-                onSelect("approvals");
+                onSelect("listed-products");
                 toggleSidebar();
               }}
-              aria-current={activeNav === "approvals" ? "page" : undefined}
+              aria-current={
+                activeNav === "listed-products" ? "page" : undefined
+              }
               className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
                 focus:outline-none focus:bg-indigo-100
               ${
-                activeNav === "approvals"
+                activeNav === "listed-products"
                   ? "text-gray-700 hover:bg-indigo-50"
                   : "text-gray-700 hover:bg-indigo-50"
               }`}
             >
-              <ClipboardCheck size={20} />
-              <span>Create Admin</span>
+              <Barcode size={20} />
+              <span>Listed Products</span>
             </button>
           </div>
         </nav>

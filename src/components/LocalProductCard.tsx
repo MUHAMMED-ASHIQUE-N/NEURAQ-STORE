@@ -30,6 +30,7 @@ export default function LocalProductCard({
   onDelete: (id: string) => void;
 }) {
   const [showPopup, setShowPopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   return (
     <>
@@ -79,7 +80,7 @@ export default function LocalProductCard({
                 <Edit className="w-4 h-4" />
               </button>
               <button
-                onClick={() => onDelete(product.id)}
+                onClick={() => setShowDeletePopup(true)}
                 className="action-btn p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
                 title="Delete"
               >
@@ -96,6 +97,60 @@ export default function LocalProductCard({
           </div>
         </div>
       </div>
+      {/* Delete Confirmation Modal */}
+      {showDeletePopup && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xs sm:max-w-sm md:max-w-md border border-gray-100 transform transition-all duration-300 scale-95 opacity-100 p-6 text-center">
+            {/* Card Header */}
+            <div className="p-6 text-center border-b border-gray-100">
+              <div className="w-16 h-16 mx-auto bg-red-50 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  ></path>
+                </svg>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                Delete Product
+              </h2>
+            </div>
+            {/* Card Body */}
+            <div className="p-6">
+              <p className="text-gray-600 text-center text-sm md:text-base leading-relaxed mb-6">
+                Are you sure you want to delete this product? This action cannot
+                be undone and will permanently remove the product from your
+                inventory.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    onDelete(product.id);
+                    setShowDeletePopup(false);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 shadow-sm order-1 sm:order-2"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setShowDeletePopup(false)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-gray-200 order-2 sm:order-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {showPopup && (

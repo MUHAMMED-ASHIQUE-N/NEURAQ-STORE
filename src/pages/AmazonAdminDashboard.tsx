@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import AmazonSidebar from "../components/AmazonSidebar";
 import AmazonProducts from "./AmazonProducts";
 import AmazonProductsNotificationPage from "../components/AmazonProductsNotificationPage";
-import AmazonSemiAdminApprovalsPage from "../components/CreateAmazonSemiAdmin";
 import { useUser } from "../contexts/UserContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
+import ListedAmazonProducts from "../components/ListedAmazonProducts";
 
 export default function AmazonAdminDashboard() {
   const user = useUser();
@@ -68,6 +68,7 @@ export default function AmazonAdminDashboard() {
           {activeNav === "products" && <AmazonProducts />}
           {activeNav === "notifications" && <AmazonProductsNotificationPage />}
           {activeNav === "approvals" && <AmazonSemiAdminApprovalsPage />}
+          {activeNav === "listed-products" && <ListedAmazonProducts />}
         </main>
       </div>
     </div>

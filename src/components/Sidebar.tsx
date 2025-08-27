@@ -12,7 +12,7 @@ import {
 import { useUser } from "../contexts/UserContext";
 
 type NavItem = {
-  key: "approvals" | "amazon" | "local" | "software";
+  key: "approvals" | "amazon" | "local" | "software" | "allproducts";
   label: string;
   icon: React.ComponentType<{ size?: number }>;
   gradient: string;
@@ -49,6 +49,12 @@ const navItems: NavItem[] = [
   {
     key: "software",
     label: "Software Products",
+    icon: Code,
+    gradient: "w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600",
+  },
+  {
+    key: "allproducts",
+    label: "All Products",
     icon: Code,
     gradient: "w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600",
   },

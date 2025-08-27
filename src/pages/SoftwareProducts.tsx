@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   Plus,
@@ -87,6 +87,7 @@ export default function SoftwareProducts() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const q = query(
@@ -284,6 +285,7 @@ export default function SoftwareProducts() {
         : [{ type: "url", value: "" }]
     );
     setErrors({});
+    titleRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -299,7 +301,7 @@ export default function SoftwareProducts() {
               Software Product Management
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p ref={titleRef} className="text-gray-600">
             Add and manage your software products and licenses
           </p>
         </div>

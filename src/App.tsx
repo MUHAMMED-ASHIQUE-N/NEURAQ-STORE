@@ -10,9 +10,7 @@ import MainAdminApprovals from "./components/MainAdminApprovals";
 import AmazonAdminDashboard from "./pages/AmazonAdminDashboard";
 import LocalAdminDashboard from "./pages/LocalAdminDashboard";
 import SoftwareAdminDashboard from "./pages/SoftwareAdminDashboard";
-import AmazonSemiAdminApprovalsPage from "./components/CreateAmazonSemiAdmin";
-import LocalSemiAdminApprovalsPage from "./components/CreateLocalSemiAdmin";
-import SoftwareSemiAdminApprovalsPage from "./components/CreateSoftwareSemiAdmin";
+import AllProducts from "./components/AllProducts";
 
 export default function App() {
   return (
@@ -22,19 +20,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route
-          path="/amazon/approvals"
-          element={<AmazonSemiAdminApprovalsPage />}
-        />
-        <Route
-          path="/local/approvals"
-          element={<LocalSemiAdminApprovalsPage />}
-        />
 
-        <Route
-          path="/software/approvals"
-          element={<SoftwareSemiAdminApprovalsPage />}
-        />
         <Route
           path="/admin/dashboard"
           element={
@@ -48,6 +34,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["main-admin"]}>
               <MainAdminApprovals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/all-products"
+          element={
+            <ProtectedRoute allowedRoles={["main-admin"]}>
+              <AllProducts />
             </ProtectedRoute>
           }
         />

@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import LocalSidebar from "../components/LocalSidebar";
 import LocalProducts from "./LocalProducts";
 import LocalProductsNotificationPage from "../components/LocalProductsNotificationPage";
-import LocalSemiAdminApprovalsPage from "../components/CreateLocalSemiAdmin"; // NEW
 import { useUser } from "../contexts/UserContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
+import ListedLocalProducts from "../components/ListedLocalProducts";
 
 export default function LocalAdminDashboard() {
   const user = useUser();
@@ -67,7 +67,7 @@ export default function LocalAdminDashboard() {
         <main className="flex-grow p-4 overflow-auto">
           {activeNav === "local" && <LocalProducts />}
           {activeNav === "notifications" && <LocalProductsNotificationPage />}
-          {activeNav === "approvals" && <LocalSemiAdminApprovalsPage />}
+          {activeNav === "listed-products" && <ListedLocalProducts />}
         </main>
       </div>
     </div>

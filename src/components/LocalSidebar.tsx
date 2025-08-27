@@ -1,10 +1,16 @@
 import React from "react";
-import { Package, ShieldCheck, ClipboardCheck, LogOut } from "lucide-react";
+import {
+  Package,
+  ShieldCheck,
+  ClipboardCheck,
+  LogOut,
+  Barcode,
+} from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 
 type SidebarProps = {
-  activeNav: "local" | "notifications" | "approvals";
-  onSelect: (nav: "local" | "notifications" | "approvals") => void;
+  activeNav: "local" | "notifications" | "listed-products";
+  onSelect: (nav: "local" | "notifications" | "listed-products") => void;
   userEmail?: string;
   onLogout: () => void;
   sidebarOpen: boolean;
@@ -98,23 +104,25 @@ export default function LocalSidebar({
               <span>Notifications</span>
             </button>
 
-            {/* Pending Approvals */}
+            {/* Listed Products */}
             <button
               onClick={() => {
-                onSelect("approvals");
+                onSelect("listed-products");
                 toggleSidebar();
               }}
-              aria-current={activeNav === "approvals" ? "page" : undefined}
+              aria-current={
+                activeNav === "listed-products" ? "page" : undefined
+              }
               className={`w-full flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium
                 focus:outline-none focus:bg-indigo-100
               ${
-                activeNav === "approvals"
+                activeNav === "listed-products"
                   ? "text-gray-700 hover:bg-indigo-50"
                   : "text-gray-700 hover:bg-indigo-50"
               }`}
             >
-              <ClipboardCheck size={20} />
-              <span>Create Admin</span>
+              <Barcode size={20} />
+              <span>Listed Products</span>
             </button>
           </div>
         </nav>

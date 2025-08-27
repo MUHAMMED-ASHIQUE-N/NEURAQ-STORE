@@ -9,6 +9,7 @@ import { useUser } from "../contexts/UserContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import AllProducts from "../components/AllProducts";
 
 export default function AdminDashboard() {
   const user = useUser();
@@ -76,6 +77,7 @@ export default function AdminDashboard() {
           {activeModule === "amazon" && <AmazonProducts />}
           {activeModule === "local" && <LocalProducts />}
           {activeModule === "software" && <SoftwareProducts />}
+          {activeModule === "allproducts" && <AllProducts />}
         </main>
       </div>
     </div>
