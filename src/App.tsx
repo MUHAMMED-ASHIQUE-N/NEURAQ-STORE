@@ -11,6 +11,7 @@ import AmazonAdminDashboard from "./pages/AmazonAdminDashboard";
 import LocalAdminDashboard from "./pages/LocalAdminDashboard";
 import SoftwareAdminDashboard from "./pages/SoftwareAdminDashboard";
 import AllProducts from "./components/AllProducts";
+import ForgotPassword from "./pages/ForgotPassword";
 
 export default function App() {
   return (
@@ -20,7 +21,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
           path="/admin/dashboard"
           element={
