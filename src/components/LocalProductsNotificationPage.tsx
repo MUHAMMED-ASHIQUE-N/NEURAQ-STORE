@@ -58,8 +58,8 @@ export default function LocalProductsNotificationPage() {
             className={`notification-item bg-white rounded-xl shadow-md border-l-4 border-green-500 p-4 md:p-6
               ${
                 n.status === "approved"
-                  ? "bg-green-50 border border-green-300 text-green-700"
-                  : "bg-red-50 border border-red-300 text-red-700"
+                  ? "bg-green-50 border mb-4 border-green-300 text-green-700"
+                  : "bg-red-50 border mb-4 border-red-300 text-red-700"
               }
             `}
           >

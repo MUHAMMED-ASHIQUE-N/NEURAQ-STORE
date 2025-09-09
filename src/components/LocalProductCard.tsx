@@ -40,18 +40,22 @@ export default function LocalProductCard({
         {/* Image Container */}
         <div className="relative aspect-square">
           <div className=" w-full h-full flex items-center justify-center">
-            {product.images ? (
-              <img
-                src={product.images}
-                alt={product.name}
-                className="w-full object-contain rounded mb-3"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src =
-                    "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"; // placeholder path
-                }}
-              />
-            ) : null}
+            <div className="flex gap-2 mb-10 overflow-x-scroll">
+              {Array.isArray(product.images) &&
+                product.images.map((url: string, idx: number) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`product-${idx}`}
+                    className="w-full object-contain rounded mb-3"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src =
+                        "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"; // placeholder path
+                    }}
+                  />
+                ))}
+            </div>
             {/* Price */}
             {product.finalPrice !== undefined && (
               <div className="absolute top-3 right-3">
@@ -173,18 +177,22 @@ export default function LocalProductCard({
               {/* Left Side - Image */}
               <div className="relative h-64 md:h-80 lg:h-full min-h-[400px]">
                 <div className=" w-full h-full flex items-center justify-center">
-                  {product.images ? (
-                    <img
-                      src={product.images}
-                      alt={product.name}
-                      className="w-80 h-80 justify-left object-contain rounded"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src =
-                          "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
-                      }}
-                    />
-                  ) : null}
+                  <div className="flex gap-2 mb-10 overflow-x-scroll">
+                    {Array.isArray(product.images) &&
+                      product.images.map((url: string, idx: number) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt={`popup-product-${idx}`}
+                          className="w-80 h-80 justify-left object-contain rounded p-2"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src =
+                              "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
+                          }}
+                        />
+                      ))}
+                  </div>
                   {/* Discount Badge */}
                   <div className="absolute top-4 left-4">
                     <div className="discount-badge px-3 py-2 rounded-full text-white font-bold text-sm shadow-lg">
