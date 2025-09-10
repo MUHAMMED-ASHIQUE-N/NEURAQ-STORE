@@ -175,7 +175,7 @@ export default function AmazonProductCard({
 
             {/* Full image with fallback */}
             {/* Card Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-0">
               {/* Left Side - Image */}
               <div className="relative h-64 md:h-80 lg:h-full min-h-[400px]">
                 <div className=" w-full h-full flex items-center justify-center ">
