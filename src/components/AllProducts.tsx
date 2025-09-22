@@ -1,6 +1,6 @@
 import { Monitor, Package } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import AmazonProductCard from "./AmazonProductCard";
+import AmazonProductCard from "./Product-Card/AmazonProductCard";
 import {
   collection,
   addDoc,
@@ -11,8 +11,8 @@ import {
   where,
 } from "firebase/firestore";
 import { firestore } from "../firebase";
-import LocalProductCard from "./LocalProductCard";
-import SoftwareProductCard from "./SoftwareProductCard";
+import LocalProductCard from "./Product-Card/LocalProductCard";
+import SoftwareProductCard from "./Product-Card/SoftwareProductCard";
 
 type Product = {
   id: string;
