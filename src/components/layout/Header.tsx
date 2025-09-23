@@ -65,7 +65,7 @@ export default function Header() {
             className="inline-flex items-center gap-2 font-extrabold tracking-tight"
           >
             <span className="h-8 w-8 rounded bg-primary from-primary to-indigo-500 bg-gradient-to-br" />
-            <span className="text-xl">Aurora</span>
+            <span className="text-xl">Neuraq</span>
           </Link>
         </div>
 
