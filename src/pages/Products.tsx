@@ -88,7 +88,7 @@ export default function ProductsPage() {
         </Select>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-[240px,1fr]">
+      <div className="flex flex-col-1 gap-8">
         <aside className="space-y-6">
           <div>
             <h3 className="text-sm font-semibold">Price range</h3>

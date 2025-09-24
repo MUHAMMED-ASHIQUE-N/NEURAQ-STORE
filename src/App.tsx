@@ -42,7 +42,7 @@ export default function App() {
               <Route path="wishlist" element={<Placeholder />} />
               <Route path="login" element={<Placeholder />} />
               <Route path="register" element={<Placeholder />} />
-              <Route path="account" element={<Placeholder />} />
+              <Route path="account" element={<Login />} />
               <Route path="search" element={<ProductsPage />} />
               <Route path="checkout" element={<CartCheckout />} />
               <Route path="orders" element={<Placeholder />} />
