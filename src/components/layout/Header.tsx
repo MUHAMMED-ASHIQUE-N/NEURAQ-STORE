@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Heart, User2, Menu, Search } from "lucide-react";
+import { ShoppingCart, Heart, User2, Menu, Search, Zap } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
@@ -64,8 +64,13 @@ export default function Header() {
             to="/"
             className="inline-flex items-center gap-2 font-extrabold tracking-tight"
           >
-            <span className="h-8 w-8 rounded bg-primary from-primary to-indigo-500 bg-gradient-to-br" />
-            <span className="text-xl">Neuraq</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+
+            <span className="text-xl md:text-2xl font-bold text-gray-800">
+              Neuraq Store
+            </span>
           </Link>
         </div>
 
@@ -132,22 +137,22 @@ export default function Header() {
             All Products
           </Link>
           <Link
-            to="/products?category=fashion"
+            to="/products?category=amazon"
             className="text-muted-foreground hover:text-foreground"
           >
-            Fashion
+            Amazon
           </Link>
           <Link
-            to="/products?category=electronics"
+            to="/products?category=local"
             className="text-muted-foreground hover:text-foreground"
           >
-            Electronics
+            Local
           </Link>
           <Link
-            to="/products?category=home"
+            to="/products?category=software"
             className="text-muted-foreground hover:text-foreground"
           >
-            Home
+            Software
           </Link>
           <Link to="/deals" className="text-primary">
             Deals

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login-Modules/Login";
 import Register from "./pages/Login-Modules/Register";
@@ -24,15 +24,59 @@ import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 
 const queryClient = new QueryClient();
+function ShouldShowNavbar(pathname: string) {
+  // Admin routes - add all admin path prefixes here
+  const adminPaths = [
+    "/admin/dashboard",
+    "/admin/approvals",
+    "/admin/all-products",
+    "/admin/amazon-products",
+    "/admin/local-products",
+    "/admin/software-products",
+    "/admin/approvals",
+    "/unauthorized",
+    "/forgot-password",
+    "*",
+
+    // add additional admin paths as needed
+  ];
+  const layoutPaths = [
+    "/",
+    "/products",
+    "/product/:id",
+    "/cart",
+    "/wishlist",
+    "/login",
+    "/register",
+    "/account",
+    "/search",
+    "/checkout",
+    "/orders",
+    "/deals",
+    "/about",
+    "/contact",
+    "/blog",
+    "/careers",
+  ];
+  const isAdminRoute = adminPaths.some((adminPath) =>
+    pathname.startsWith(adminPath)
+  );
+  const isLayoutRoute = layoutPaths.some((layoutPath) =>
+    pathname.startsWith(layoutPath)
+  );
+  return isAdminRoute || !isLayoutRoute;
+}
 
 export default function App() {
+  const location = useLocation();
+  const showNavbar = ShouldShowNavbar(location.pathname);
   return (
     <>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <Navbar />
+          {showNavbar && <Navbar />}
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<Index />} />
@@ -40,8 +84,8 @@ export default function App() {
               <Route path="product/:id" element={<ProductDetails />} />
               <Route path="cart" element={<CartCheckout />} />
               <Route path="wishlist" element={<Placeholder />} />
-              <Route path="login" element={<Placeholder />} />
-              <Route path="register" element={<Placeholder />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
               <Route path="account" element={<Login />} />
               <Route path="search" element={<ProductsPage />} />
               <Route path="checkout" element={<CartCheckout />} />

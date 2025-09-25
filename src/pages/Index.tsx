@@ -20,19 +20,19 @@ function Hero() {
 function FeaturedSections() {
   const categories = [
     {
-      title: "Fashion",
+      title: "Amazon",
       href: "/products?category=fashion",
       image:
         "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop",
     },
     {
-      title: "Electronics",
+      title: "Local",
       href: "/products?category=electronics",
       image:
         "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop",
     },
     {
-      title: "Home & Living",
+      title: "Software",
       href: "/products?category=home",
       image:
         "https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1200&auto=format&fit=crop",
