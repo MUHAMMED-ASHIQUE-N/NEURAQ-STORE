@@ -1,7 +1,7 @@
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { firestore } from "../firebase";
+import { firestore } from "../firebase"; // adjust path as needed
 
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -39,17 +39,15 @@ type ProductDetail = {
 
 export default function ProductDetails() {
   const { id } = useParams();
-  const location = useLocation();
-
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [active, setActive] = useState(0);
   const [qty, setQty] = useState(1);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const { add } = useCart();
 
-  // Extract category from query params (default to 'amazon')
-  const searchParams = new URLSearchParams(location.search);
-  const source = (searchParams.get("category") || "software") as
+  // Example to determine source (amazon/local/software) - can be adapted
+  const searchParams = new URLSearchParams(window.location.search);
+  const source = (searchParams.get("amazon, local, software") || "amazon") as
     | "amazon"
     | "local"
     | "software";
@@ -63,7 +61,6 @@ export default function ProductDetails() {
         local: "localProducts",
         software: "softwareProducts",
       };
-
       const collectionName = collectionMap[source];
 
       const ref = doc(firestore, collectionName, id);
@@ -81,7 +78,7 @@ export default function ProductDetails() {
           quantity: data.quantity,
         });
       } else {
-        setProduct(null);
+        setProduct(null); // or fallback logic
       }
     }
     fetchProduct();
@@ -119,7 +116,6 @@ export default function ProductDetails() {
             ))}
           </div>
         </div>
-
         {/* Info */}
         <div>
           <h1 className="text-2xl font-bold">{product.name}</h1>
@@ -139,8 +135,6 @@ export default function ProductDetails() {
               </>
             )}
           </div>
-
-          {/* Variants */}
 
           {/* Quantity */}
           <div className="mt-6 flex items-center space-x-4">

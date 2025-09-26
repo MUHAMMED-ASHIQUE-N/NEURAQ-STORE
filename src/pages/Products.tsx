@@ -14,15 +14,13 @@ import { products as productData } from "../data/products";
 const allProducts: Product[] = productData.map((p) => ({
   id: p.id,
   name: p.name,
-  price: p.price,
+  price: p.finalPrice,
   originalPrice: p.originalPrice,
-  rating: p.rating,
-  reviews: p.reviews,
   image: p.images[0],
 }));
 
 const brands = ["Aurora", "Acme", "Nexus", "Zephyr"] as const;
-const categories = ["fashion", "electronics", "home"] as const;
+const categories = ["Amazon", "Local", "Software"] as const;
 
 import { useLocation } from "react-router-dom";
 
