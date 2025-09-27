@@ -86,11 +86,11 @@ export default function ProductsPage() {
         </Select>
       </div>
 
-      <div className="flex flex-col-1 gap-8">
+      <div className="flex flex-cols-3 gap-20">
         <aside className="space-y-6">
           <div>
             <h3 className="text-sm font-semibold">Price range</h3>
-            <div className="mt-4">
+            <div className="mt-4 w-40">
               <Slider
                 value={price}
                 onValueChange={setPrice}

@@ -47,7 +47,7 @@ export default function ProductDetails() {
 
   // Example to determine source (amazon/local/software) - can be adapted
   const searchParams = new URLSearchParams(window.location.search);
-  const source = (searchParams.get("amazon, local, software") || "amazon") as
+  const source = (searchParams.get("source") || "amazon") as
     | "amazon"
     | "local"
     | "software";

@@ -6,8 +6,9 @@ import { Button } from "../../components/ui/button";
 import { Separator } from "../../components/ui/separator";
 import { useCart } from "../../contexts/CartContext";
 import { Heart, Star } from "lucide-react";
+import { Link } from "react-router-dom";
 
-type Product = {
+export type Product = {
   id: string;
   name: string;
   finalPrice: number;
@@ -95,8 +96,12 @@ export default function ProductsList() {
               </div>
             )}
           </div>
-
-          <h2 className="font-semibold text-lg">{product.name}</h2>
+          <Link
+            to={`/product/${product.id}`}
+            className="line-clamp-1 font-medium"
+          >
+            <h2 className="font-semibold text-lg">{product.name}</h2>
+          </Link>
           <p className="text-muted-foreground mb-2 line-clamp-3">
             {product.description}
           </p>
