@@ -1,7 +1,30 @@
 import ProductCard, { type Product } from "../components/shop/ProductCard";
 import { Link } from "react-router-dom";
 import HeroCarousel from "../components/shop/HeroCarousel";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
+import { db, firestore } from "../firebase";
+import { useEffect, useState } from "react";
+import { products as productData } from "../data/products";
 
+type Product = {
+  id: string;
+  name: string;
+  finalPrice: number;
+  originalPrice?: number;
+  description?: string;
+  rating?: number; // 0-5
+  reviews?: number;
+  images?: [];
+  quantity: number;
+};
+const allProducts: Product[] = productData.map((p) => ({
+  id: p.id,
+  name: p.name,
+  price: p.finalPrice,
+  originalPrice: p.originalPrice,
+  image: p.images[0],
+}));
 export default function Index() {
   return (
     <div>
@@ -66,49 +89,32 @@ function FeaturedSections() {
 }
 
 function FeaturedProducts() {
-  const products: Product[] = [
-    {
-      id: "f1",
-      name: "Noise Cancelling Headphones",
-      price: 149,
-      originalPrice: 219,
-      rating: 5,
-      reviews: 412,
-      image:
-        "https://images.unsplash.com/photo-1518443855757-8d2f50a94f21?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "f2",
-      name: "Minimal Desk Lamp",
-      price: 59,
-      originalPrice: 79,
-      rating: 4,
-      reviews: 123,
-      image:
-        "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "f3",
-      name: "Classic Linen Shirt",
-      price: 39,
-      originalPrice: 59,
-      rating: 4,
-      reviews: 89,
-      image:
-        "https://images.unsplash.com/photo-1520975859264-05d80fcf0b3f?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      id: "f4",
-      name: "Everyday Sneakers",
-      price: 89,
-      originalPrice: 109,
-      rating: 5,
-      reviews: 240,
-      image:
-        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop",
-    },
-  ];
-
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    async function fetchAllProducts() {
+      const collections = [
+        "amazonProducts",
+        "localProducts",
+        "softwareProducts",
+      ];
+      let all: Product[] = [];
+      for (const col of collections) {
+        const snap = await getDocs(collection(db, col));
+        all = [
+          ...all,
+          ...(snap.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Product[]),
+        ];
+      }
+      setProducts(all);
+      setLoading(false);
+    }
+    fetchAllProducts();
+  }, []);
+  if (loading) return <div>Loading...</div>;
   return (
     <section className="container mt-12 md:mt-16">
       <div className="flex items-end justify-between">
@@ -121,8 +127,8 @@ function FeaturedProducts() {
         </Link>
       </div>
       <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </section>

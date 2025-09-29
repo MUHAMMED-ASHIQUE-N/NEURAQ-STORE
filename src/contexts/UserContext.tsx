@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
-import app from "../firebase";
+import { app } from "../firebase";
 
 interface User {
   uid: string;

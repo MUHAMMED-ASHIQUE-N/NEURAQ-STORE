@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import ProductCard, { type Product } from "../components/shop/ProductCard";
+import { useEffect, useMemo, useState } from "react";
+import ProductCard from "../components/shop/ProductCard";
 import { Slider } from "../components/ui/slider";
+import { db, firestore } from "../firebase";
 import {
   Select,
   SelectContent,
@@ -10,7 +11,20 @@ import {
 } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { products as productData } from "../data/products";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
 
+type Product = {
+  id: string;
+  name: string;
+  finalPrice: number;
+  originalPrice?: number;
+  description?: string;
+  rating?: number; // 0-5
+  reviews?: number;
+  images?: [];
+  quantity: number;
+};
 const allProducts: Product[] = productData.map((p) => ({
   id: p.id,
   name: p.name,
@@ -33,6 +47,31 @@ export default function ProductsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sort, setSort] = useState("popularity");
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    async function fetchAllProducts() {
+      const collections = [
+        "amazonProducts",
+        "localProducts",
+        "softwareProducts",
+      ];
+      let all: Product[] = [];
+      for (const col of collections) {
+        const snap = await getDocs(collection(db, col));
+        all = [
+          ...all,
+          ...(snap.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Product[]),
+        ];
+      }
+      setProducts(all);
+      setLoading(false);
+    }
+    fetchAllProducts();
+  }, []);
   const filtered = useMemo(() => {
     let list = allProducts.filter(
       (p) => p.price >= price[0] && p.price <= price[1]
@@ -66,7 +105,7 @@ export default function ProductsPage() {
       ? arr.filter((v) => v !== value)
       : [...arr, value];
   }
-
+  if (loading) return <div>Loading...</div>;
   return (
     <div className="container py-8 md:py-10">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -149,8 +188,8 @@ export default function ProductsPage() {
 
         <section>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>
