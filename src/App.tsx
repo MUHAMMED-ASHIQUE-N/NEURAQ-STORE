@@ -22,6 +22,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
+import OrdersPage from "./pages/Orders";
 
 const queryClient = new QueryClient();
 function ShouldShowNavbar(pathname: string) {
@@ -89,7 +90,7 @@ export default function App() {
               <Route path="account" element={<Login />} />
               <Route path="search" element={<ProductsPage />} />
               <Route path="checkout" element={<CartCheckout />} />
-              <Route path="orders" element={<Placeholder />} />
+              <Route path="orders" element={<OrdersPage />} />
               <Route path="admin" element={<Placeholder />} />
               <Route path="deals" element={<Placeholder />} />
               <Route path="about" element={<Placeholder />} />

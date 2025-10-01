@@ -109,7 +109,8 @@ function FeaturedProducts() {
           })) as Product[]),
         ];
       }
-      setProducts(all);
+      all.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      setProducts(all.slice(0, 10));
       setLoading(false);
     }
     fetchAllProducts();

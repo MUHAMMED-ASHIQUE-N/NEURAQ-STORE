@@ -11,6 +11,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { addOrder } from "../data/orders";
+import { useAuth } from "../contexts/AuthContext";
 
 function currency(n: number) {
   return new Intl.NumberFormat(undefined, {
@@ -23,6 +26,8 @@ export default function CartCheckout() {
   const { items, remove, updateQty, subtotal, clear } = useCart();
   const [pincode, setPincode] = useState("");
   const [coupon, setCoupon] = useState("");
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const shipping = subtotal > 100 ? 0 : subtotal ? 8 : 0;
   const tax = subtotal * 0.08;
@@ -216,7 +221,23 @@ export default function CartCheckout() {
                 </div>
               </div>
 
-              <Button onClick={() => clear()}>Place order</Button>
+              <Button
+                onClick={() => {
+                  const orderTotal = total;
+                  addOrder(user?.id ?? "guest", {
+                    items,
+                    subtotal,
+                    shipping,
+                    tax,
+                    discount,
+                    total: orderTotal,
+                  });
+                  clear();
+                  navigate("/orders");
+                }}
+              >
+                Place order
+              </Button>
             </section>
 
             <aside className="h-fit rounded-xl border p-4">

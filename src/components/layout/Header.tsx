@@ -1,19 +1,34 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ShoppingCart, Heart, User2, Menu, Search, Zap } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
 import { useState } from "react";
+
 import { useCart } from "../../contexts/CartContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { getAuth, signOut as firebaseSignOut, signOut } from "firebase/auth";
 
 export default function Header() {
   const [query, setQuery] = useState("");
-  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await firebaseSignOut(auth);
+    signOut(); // your local sign out logic, if needed
+    window.location.href = "/";
+  };
 
   function onSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
-    if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
+    // use native form submission to avoid router hooks here
+    // keep default behavior — nothing to do in JS
   }
 
   return (
@@ -75,12 +90,14 @@ export default function Header() {
         </div>
 
         <form
-          onSubmit={onSearch}
+          method="GET"
+          action="/search"
           className="hidden flex-1 md:flex items-center max-w-xl"
         >
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              name="q"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search for products, brands and more"
@@ -100,25 +117,30 @@ export default function Header() {
               <Heart className="mr-2 h-4 w-4" /> Wishlist
             </Link>
           </Button>
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="hidden md:inline-flex"
-          >
-            <Link to="/account">
-              <User2 className="mr-2 h-4 w-4" /> Sign in
-            </Link>
-          </Button>
+          {user ? (
+            <UserMenu userName={user.name} onLogout={handleLogout} />
+          ) : (
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden md:inline-flex"
+            >
+              <Link to="/account">
+                <User2 className="mr-2 h-4 w-4" /> Sign in
+              </Link>
+            </Button>
+          )}
           <CartButton />
         </div>
       </div>
 
       <div className="md:hidden border-t">
-        <form onSubmit={onSearch} className="container py-2">
+        <form method="GET" action="/search" className="container py-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              name="q"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search for products, brands and more"
@@ -160,6 +182,39 @@ export default function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function UserMenu({
+  userName,
+  onLogout,
+}: {
+  userName: string;
+  onLogout: () => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="inline-flex items-center">
+          <User2 className="mr-2 h-4 w-4" />
+          <span className="hidden md:inline">{userName}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem asChild>
+          <Link to="/orders" className="w-full">
+            My Orders
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/account" className="w-full">
+            Profile Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
