@@ -10,15 +10,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAuth, signOut as firebaseSignOut, signOut } from "firebase/auth";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  getDoc,
+} from "firebase/firestore";
+import { firestore } from "../../firebase"; // update path accordingly
 
 export default function Header() {
   const [query, setQuery] = useState("");
   const { user, signOut } = useAuth();
+  const [profileName, setProfileName] = useState<{
+    firstName: string;
+    lastName: string;
+  } | null>(null);
+
   const handleLogout = async () => {
     const auth = getAuth();
     await firebaseSignOut(auth);
@@ -26,10 +40,23 @@ export default function Header() {
     window.location.href = "/";
   };
 
-  function onSearch(e: React.FormEvent) {
-    // use native form submission to avoid router hooks here
-    // keep default behavior — nothing to do in JS
-  }
+  useEffect(() => {
+    async function fetchProfileName() {
+      if (user?.id) {
+        const userDoc = await getDoc(doc(firestore, "users", user.id));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setProfileName({
+            firstName: data.firstName,
+            lastName: data.lastName,
+          });
+        }
+      } else {
+        setProfileName(null);
+      }
+    }
+    fetchProfileName();
+  }, [user]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-background/70">
@@ -118,7 +145,14 @@ export default function Header() {
             </Link>
           </Button>
           {user ? (
-            <UserMenu userName={user.name} onLogout={handleLogout} />
+            <UserMenu
+              userName={
+                profileName
+                  ? `${profileName.firstName} ${profileName.lastName}`
+                  : ""
+              }
+              onLogout={handleLogout}
+            />
           ) : (
             <Button
               asChild
@@ -220,13 +254,18 @@ function UserMenu({
 
 function CartButton() {
   const { count } = useCart();
+  const cart = useCart();
   return (
     <Button asChild variant="default" size="sm" className="relative">
       <Link to="/cart" className="inline-flex items-center">
         <ShoppingCart className="mr-2 h-4 w-4" />
         Cart
         <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
-          {count}
+          {cart.count > 0 && (
+            <span className="absolute inline-flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white">
+              {cart.count}
+            </span>
+          )}
         </span>
       </Link>
     </Button>

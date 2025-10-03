@@ -20,6 +20,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -142,7 +143,7 @@ export default function Login() {
                 </div>
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   disabled={loading}
@@ -152,6 +153,8 @@ export default function Login() {
                 />
                 <button
                   type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  tabIndex={-1}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   <Eye id="eyeIcon" className="w-5 h-5" />

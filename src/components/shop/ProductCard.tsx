@@ -5,6 +5,10 @@ import { Separator } from "../../components/ui/separator";
 import { useCart } from "../../contexts/CartContext";
 import { Heart, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { doc, setDoc } from "firebase/firestore";
+import { firestore } from "../../firebase";
+import { useAuth } from "../../contexts/AuthContext";
 
 type Product = {
   id: string;
@@ -29,6 +33,23 @@ function currency(n: number) {
 
 export default function ProductsList({ product }: { product: Product }) {
   const { add } = useCart();
+  const navigate = useNavigate();
+  const [wishlistActive, setWishlistActive] = useState(false);
+  const { user } = useAuth();
+
+  const handleWishlist = async () => {
+    const newActive = !wishlistActive;
+    setWishlistActive(newActive);
+    if (user?.id && newActive) {
+      await setDoc(doc(firestore, "wishlists", `${user.id}_${product.id}`), {
+        userId: user.id,
+        productId: product.id,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    // Optionally: Remove from wishlist if !newActive
+  };
+
   const productImage =
     Array.isArray(product.images) && product.images.length > 0
       ? product.images[0]
@@ -103,21 +124,47 @@ export default function ProductsList({ product }: { product: Product }) {
             className="w-full"
             disabled={product.quantity === 0}
             onClick={() =>
-              add(
-                {
-                  id: product.id,
-                  name: product.name,
-                  price: product.finalPrice,
-                  image: product.images,
-                },
-                1
-              )
+              add({
+                id: product.id,
+                name: product.name,
+                price: product.finalPrice,
+                image: product.images,
+                quantity: 1,
+              })
             }
           >
             Add to Cart
           </Button>
-          <Button variant="outline" size="icon" aria-label="Add to wishlist">
-            <Heart className="h-4 w-4" />
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <Button
+            className="w-full"
+            disabled={product.quantity === 0}
+            onClick={() => {
+              add({
+                id: product.id,
+                name: product.name,
+                price: product.finalPrice,
+                image: product.images,
+                quantity: 1,
+              });
+              navigate("/cart");
+            }}
+          >
+            Buy Now
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Add to wishlist"
+            onClick={handleWishlist}
+          >
+            <Heart
+              className="h-4 w-4"
+              style={{ color: wishlistActive ? "red" : undefined }}
+              fill={wishlistActive ? "red" : "none"}
+            />
           </Button>
         </div>
       </div>
