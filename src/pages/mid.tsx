@@ -1,72 +1,29 @@
-import ProductsList from "../components/shop/ProductCard";
+{
+  order.items.map((item) => {
+    const qty = Number(item.qty) || 0;
+    const price = Number(item.price) || 0;
+    const totalPrice = currency(price * qty);
 
-const filteredProducts =
-  query === ""
-    ? products
-    : products.filter((p) =>
-        p.name.toLowerCase().includes(query.toLowerCase())
-      );
+    const orderDate = order.createdAt?.toDate
+      ? order.createdAt.toDate()
+      : new Date(order.createdAt);
+    const dateString = orderDate.toLocaleDateString();
 
-function ProductSearch({ products }) {
-  const [query, setQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState(products);
-
-  useEffect(() => {
-    const filtered =
-      query === ""
-        ? products
-        : products.filter((p) =>
-            p.name.toLowerCase().includes(query.toLowerCase())
-          );
-    setFilteredProducts(filtered);
-  }, [query, products]);
-
-  return (
-    <>
-      <input
-        type="search"
-        placeholder="Search products..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <ProductsList products={filteredProducts} />
-    </>
-  );
-}
-
-async function performSearch(searchTerm: string) {
-  const lowerTerm = searchTerm.toLowerCase();
-  const collections = ["amazonProducts", "localProducts", "softwareProducts"];
-
-  const results = [];
-
-  for (const colName of collections) {
-    const colRef = collection(firestore, colName);
-    const q = query(
-      colRef,
-      where("title", ">=", lowerTerm),
-      where("title", "<=", lowerTerm + "\uf8ff")
+    return (
+      <div key={item.id} className="flex items-center gap-3">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="h-14 w-14 rounded-md object-cover"
+        />
+        <div className="flex-1">
+          <div className="font-medium">{item.name}</div>
+          <div className="text-sm text-muted-foreground">Qty: {qty}</div>
+        </div>
+        <div className="text-right text-sm font-medium">{totalPrice}</div>
+      </div>
     );
-
-    const snapshot = await getDocs(q);
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (
-        data.title?.toLowerCase().includes(lowerTerm) ||
-        data.name?.toLowerCase().includes(lowerTerm) ||
-        data.description?.toLowerCase().includes(lowerTerm)
-      ) {
-        results.push({ id: doc.id, ...data });
-      }
-    });
-  }
-
-  return results;
+  });
 }
-async function onSearch(e: React.FormEvent) {
-  e.preventDefault();
-  if (!query) return;
-  const products = await searchProducts(query);
-  // handle products display or state update
-}
+
+<div className="text-sm">{dateString}</div>;

@@ -7,6 +7,7 @@ export type CartItem = {
   price: number;
   image: string;
   qty: number;
+  type: "amazon" | "local" | "software";
 };
 
 type CartState = { items: CartItem[] };

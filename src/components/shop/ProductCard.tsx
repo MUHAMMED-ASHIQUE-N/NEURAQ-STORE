@@ -150,6 +150,7 @@ export default function ProductsList({ product }: { product: Product }) {
               });
               navigate("/cart");
             }}
+            variant="secondary"
           >
             Buy Now
           </Button>

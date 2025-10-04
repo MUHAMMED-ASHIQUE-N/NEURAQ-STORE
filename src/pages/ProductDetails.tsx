@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { firestore } from "../firebase"; // adjust path as needed
@@ -44,6 +44,7 @@ export default function ProductDetails() {
   const [qty, setQty] = useState(1);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const { add } = useCart();
+  const navigate = useNavigate();
 
   // Example to determine source (amazon/local/software) - can be adapted
   const searchParams = new URLSearchParams(window.location.search);
@@ -168,7 +169,20 @@ export default function ProductDetails() {
             >
               Add to cart
             </Button>
-            <Button disabled={product.quantity === 0} variant="secondary">
+            <Button
+              onClick={() => {
+                add({
+                  id: product.id,
+                  name: product.name,
+                  price: product.finalPrice,
+                  image: product.images,
+                  quantity: 1,
+                });
+                navigate("/cart");
+              }}
+              disabled={product.quantity === 0}
+              variant="secondary"
+            >
               Buy now
             </Button>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useCart } from "../contexts/CartContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -14,6 +14,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { addOrder } from "../data/orders";
 import { useAuth } from "../contexts/AuthContext";
+import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
+import { firestore } from "../firebase";
 
 function currency(n: number) {
   return new Intl.NumberFormat(undefined, {
@@ -28,12 +30,91 @@ export default function CartCheckout() {
   const [coupon, setCoupon] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
+  const placeOrderBtnRef = useRef<HTMLButtonElement>(null);
 
   const shipping = subtotal > 100 ? 0 : subtotal ? 8 : 0;
   const tax = subtotal * 0.08;
   const discount =
     coupon.trim().toUpperCase() === "SAVE10" ? subtotal * 0.1 : 0;
   const total = subtotal + shipping + tax - discount;
+
+  async function placeOrder() {
+    if (!user) {
+      alert("Please login to place an order");
+      return;
+    }
+    const orderItems = items.map((item) => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.qty,
+      image: item.image,
+    }));
+
+    const orderRef = doc(
+      firestore,
+      "users",
+      user.id,
+      "orders",
+      Date.now().toString()
+    );
+    await setDoc(orderRef, {
+      userId: user.id,
+      items: orderItems,
+      subtotal: subtotal,
+      tax: tax,
+      total: total,
+      createdAt: new Date(),
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      status: "pending",
+    });
+
+    await setDoc(orderRef, {
+      userId: user?.id,
+      items: orderItems,
+      subtotal: subtotal, // subtotal value
+      tax: tax, // tax value
+      total: total,
+      createdAt: new Date(),
+      date: new Date().toLocaleDateString(), // human-readable date
+      time: new Date().toLocaleTimeString(),
+      status: "pending",
+    });
+
+    const batchUpdates = [];
+
+    for (const item of items) {
+      let collectionName = "";
+      if (item.type === "amazon") collectionName = "amazonProducts";
+      else if (item.type === "local") collectionName = "localProducts";
+      else if (item.type === "software") collectionName = "softwareProducts";
+      else continue;
+
+      const productRef = doc(firestore, collectionName, item.id);
+      const productSnap = await getDoc(productRef);
+
+      if (productSnap.exists()) {
+        const currentQty = productSnap.data().quantity || 0;
+        const newQty = currentQty - item.qty;
+
+        if (newQty < 0) {
+          alert(`Not enough quantity for ${item.name}`);
+          return; // Abort order if insufficient stock
+        }
+
+        await updateDoc(productRef, { quantity: newQty });
+      }
+    }
+
+    await Promise.all(batchUpdates);
+    clear();
+    navigate("/orders");
+  }
+
+  const handleProceedToCheckout = () => {
+    placeOrderBtnRef.current?.scrollIntoView({ behavior: "smooth" });
+    placeOrderBtnRef.current?.focus();
+  };
 
   return (
     <div className="container py-8 md:py-10">
@@ -51,24 +132,27 @@ export default function CartCheckout() {
           ) : (
             <div className="grid gap-8 lg:grid-cols-[1fr,380px]">
               <section className="space-y-4">
-                {items.map((i) => (
-                  <div key={i.id} className="flex gap-4 rounded-xl border p-4">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex gap-4 rounded-xl border p-4"
+                  >
                     <img
-                      src={i.image}
-                      alt={i.name}
+                      src={item.image}
+                      alt={item.name}
                       className="h-24 w-24 rounded-md object-cover"
                     />
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="font-medium">{i.name}</div>
+                          <div className="font-medium">{item.name}</div>
                           <div className="mt-1 text-sm text-muted-foreground">
-                            {currency(i.price)}
+                            {currency(item.price)}
                           </div>
                         </div>
                         <button
                           className="text-sm text-muted-foreground hover:text-foreground"
-                          onClick={() => remove(i.id)}
+                          onClick={() => remove(item.id)}
                         >
                           Remove
                         </button>
@@ -76,14 +160,14 @@ export default function CartCheckout() {
                       <div className="mt-3 inline-flex items-center rounded-md border">
                         <button
                           className="px-3 py-1.5"
-                          onClick={() => updateQty(i.id, i.qty - 1)}
+                          onClick={() => updateQty(item.id, item.qty - 1)}
                         >
                           -
                         </button>
-                        <span className="min-w-10 text-center">{i.qty}</span>
+                        <span className="min-w-10 text-center">{item.qty}</span>
                         <button
                           className="px-3 py-1.5"
-                          onClick={() => updateQty(i.id, i.qty + 1)}
+                          onClick={() => updateQty(item.id, item.qty + 1)}
                         >
                           +
                         </button>
@@ -91,7 +175,7 @@ export default function CartCheckout() {
                     </div>
                     <div className="hidden text-right sm:block">
                       <div className="font-semibold">
-                        {currency(i.price * i.qty)}
+                        {currency(item.price * item.qty)}
                       </div>
                     </div>
                   </div>
@@ -146,7 +230,11 @@ export default function CartCheckout() {
                       Apply
                     </Button>
                   </div>
-                  <Button asChild disabled={!items.length}>
+                  <Button
+                    asChild
+                    onClick={handleProceedToCheckout}
+                    disabled={items.length === 0}
+                  >
                     <a href="#checkout">Proceed to Checkout</a>
                   </Button>
                 </div>
@@ -220,24 +308,16 @@ export default function CartCheckout() {
                   <Input placeholder="CVV" />
                 </div>
               </div>
-
-              <Button
-                onClick={() => {
-                  const orderTotal = total;
-                  addOrder(user?.id ?? "guest", {
-                    items,
-                    subtotal,
-                    shipping,
-                    tax,
-                    discount,
-                    total: orderTotal,
-                  });
-                  clear();
-                  navigate("/orders");
-                }}
-              >
-                Place order
-              </Button>
+              <div id="place-order-section">
+                <Button
+                  onClick={() => {
+                    placeOrder();
+                    navigate("/orders");
+                  }}
+                >
+                  Place order
+                </Button>
+              </div>
             </section>
 
             <aside className="h-fit rounded-xl border p-4">
