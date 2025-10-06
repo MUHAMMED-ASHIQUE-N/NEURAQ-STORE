@@ -1,5 +1,6 @@
 import { Zap } from "lucide-react";
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   return (
@@ -12,9 +13,11 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mr-3">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl md:text-2xl font-bold text-gray-800">
-                Neuraq Store
-              </span>
+              <Link to="/">
+                <span className="text-xl md:text-2xl font-bold text-gray-800">
+                  Neuraq Store
+                </span>
+              </Link>
             </div>
           </div>
         </div>

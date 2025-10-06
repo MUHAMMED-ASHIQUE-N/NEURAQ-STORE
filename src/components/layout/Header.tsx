@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Heart, User2, Menu, Search, Zap } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -160,7 +160,7 @@ export default function Header() {
               size="sm"
               className="hidden md:inline-flex"
             >
-              <Link to="/account">
+              <Link to="/login">
                 <User2 className="mr-2 h-4 w-4" /> Sign in
               </Link>
             </Button>
@@ -226,6 +226,34 @@ function UserMenu({
   userName: string;
   onLogout: () => void;
 }) {
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const user = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user?.user?.id) return;
+      const roleDocRef = doc(firestore, "users", user.user.id);
+      const roleSnap = await getDoc(roleDocRef);
+      if (roleSnap.exists()) {
+        const data = roleSnap.data();
+        setUserRole(data.role);
+      }
+    };
+    fetchUserRole();
+  }, [user?.user?.id]);
+
+  const handleAdminRedirect = () => {
+    if (userRole === "main-admin") {
+      navigate("/admin/dashboard");
+    } else if (userRole === "amazon-semi-admin") {
+      navigate("/admin/amazon-products");
+    } else if (userRole === "local-semi-admin") {
+      navigate("/admin/local-products");
+    } else if (userRole === "software-semi-admin") {
+      navigate("/admin/software-products");
+    }
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -245,6 +273,16 @@ function UserMenu({
             Profile Settings
           </Link>
         </DropdownMenuItem>
+        {[
+          "main-admin",
+          "amazon-semi-admin",
+          "local-semi-admin",
+          "software-semi-admin",
+        ].includes(userRole ?? "") && (
+          <DropdownMenuItem onClick={handleAdminRedirect} className="w-full">
+            Admin Panel
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
       </DropdownMenuContent>

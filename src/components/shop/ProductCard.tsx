@@ -6,7 +6,7 @@ import { useCart } from "../../contexts/CartContext";
 import { Heart, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { firestore } from "../../firebase";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -37,17 +37,52 @@ export default function ProductsList({ product }: { product: Product }) {
   const [wishlistActive, setWishlistActive] = useState(false);
   const { user } = useAuth();
 
+  useEffect(() => {
+    const fetchWishlistStatus = async () => {
+      if (!user?.id) return;
+      const wishlistDocRef = doc(
+        firestore,
+        "users",
+        user.id,
+        "wishlist",
+        product.id
+      );
+      const docSnap = await getDoc(wishlistDocRef);
+      setWishlistActive(docSnap.exists() && docSnap.data().status === true);
+    };
+    fetchWishlistStatus();
+  }, [user?.id, product.id]);
+
   const handleWishlist = async () => {
+    if (!user?.id) return;
+
     const newActive = !wishlistActive;
     setWishlistActive(newActive);
-    if (user?.id && newActive) {
-      await setDoc(doc(firestore, "wishlists", `${user.id}_${product.id}`), {
-        userId: user.id,
+
+    const wishlistDocRef = doc(
+      firestore,
+      "users",
+      user.id,
+      "wishlist",
+      product.id
+    );
+
+    if (newActive) {
+      await setDoc(wishlistDocRef, {
         productId: product.id,
+        name: product.name,
+        description: product.description,
+        image:
+          Array.isArray(product.images) && product.images.length > 0
+            ? product.images[0]
+            : product.image,
+        finalPrice: product.finalPrice,
+        status: true,
         createdAt: new Date().toISOString(),
       });
+    } else {
+      await deleteDoc(wishlistDocRef);
     }
-    // Optionally: Remove from wishlist if !newActive
   };
 
   const productImage =

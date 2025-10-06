@@ -55,7 +55,7 @@ export default function OrdersPage() {
                   <span className="font-mono text-foreground">{order.id}</span>
                 </div>
                 <div className="text-sm">
-                  {new Date(order.createdAt).toLocaleString()}
+                  {new Date(order.createdAt?.toDate()).toLocaleString()}
                 </div>
               </div>
               <div className="mt-3 grid gap-4 sm:grid-cols-[1fr,260px]">

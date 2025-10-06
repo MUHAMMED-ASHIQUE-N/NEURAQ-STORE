@@ -46,6 +46,9 @@ export default function Login() {
       // Determine redirect path by role
       let redirectPath = "/unauthorized";
       switch (role) {
+        case "user":
+          redirectPath = "/";
+          break;
         case "main-admin":
           redirectPath = "/admin/dashboard";
           break;

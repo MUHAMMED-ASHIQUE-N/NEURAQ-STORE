@@ -130,8 +130,8 @@ export default function CartCheckout() {
           {items.length === 0 ? (
             <p className="text-muted-foreground">Your cart is empty.</p>
           ) : (
-            <div className="grid gap-8 lg:grid-cols-[1fr,380px]">
-              <section className="space-y-4">
+            <div className="flex flex-col-1 gap-8">
+              <section className="space-y-4 w-220">
                 {items.map((item) => (
                   <div
                     key={item.id}
@@ -182,7 +182,7 @@ export default function CartCheckout() {
                 ))}
               </section>
 
-              <aside className="h-fit rounded-xl border p-4">
+              <aside className="h-fit rounded-xl border p-4 w-100">
                 <h3 className="text-sm font-semibold">Summary</h3>
                 <div className="mt-3 space-y-2 text-sm">
                   <div className="flex justify-between">

@@ -23,6 +23,10 @@ import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import OrdersPage from "./pages/Orders";
+import WishlistPage from "./pages/Wishlist";
+import AboutPage from "./pages/About";
+import ContactPage from "./pages/Contact";
+import ProfileSettingsPage from "./pages/ProfileSettings";
 
 const queryClient = new QueryClient();
 function ShouldShowNavbar(pathname: string) {
@@ -84,17 +88,17 @@ export default function App() {
               <Route path="products" element={<ProductsPage />} />
               <Route path="product/:id" element={<ProductDetails />} />
               <Route path="cart" element={<CartCheckout />} />
-              <Route path="wishlist" element={<Placeholder />} />
+              <Route path="wishlist" element={<WishlistPage />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
-              <Route path="account" element={<Login />} />
+              <Route path="account" element={<ProfileSettingsPage />} />
               <Route path="search" element={<ProductsPage />} />
               <Route path="checkout" element={<CartCheckout />} />
               <Route path="orders" element={<OrdersPage />} />
               <Route path="admin" element={<Placeholder />} />
               <Route path="deals" element={<Placeholder />} />
-              <Route path="about" element={<Placeholder />} />
-              <Route path="contact" element={<Placeholder />} />
+              <Route path="about" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
               <Route path="blog" element={<Placeholder />} />
               <Route path="careers" element={<Placeholder />} />
             </Route>

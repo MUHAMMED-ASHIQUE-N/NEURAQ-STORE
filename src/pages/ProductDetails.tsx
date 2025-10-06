@@ -46,44 +46,42 @@ export default function ProductDetails() {
   const { add } = useCart();
   const navigate = useNavigate();
 
-  // Example to determine source (amazon/local/software) - can be adapted
-  const searchParams = new URLSearchParams(window.location.search);
-  const source = (searchParams.get("source") || "amazon") as
-    | "amazon"
-    | "local"
-    | "software";
-
   useEffect(() => {
     async function fetchProduct() {
       if (!id) return;
 
-      const collectionMap = {
-        amazon: "amazonProducts",
-        local: "localProducts",
-        software: "softwareProducts",
-      };
-      const collectionName = collectionMap[source];
+      const collectionList = [
+        "amazonProducts",
+        "localProducts",
+        "softwareProducts",
+      ];
 
-      const ref = doc(firestore, collectionName, id);
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        const data = snap.data();
+      let productData = null;
+      for (const collectionName of collectionList) {
+        const ref = doc(firestore, collectionName, id);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          productData = snap.data();
+          break;
+        }
+      }
+      if (productData) {
         setProduct({
-          id: snap.id,
-          name: data.name,
-          originalPrice: data.originalPrice,
-          finalPrice: data.finalPrice,
-          images: data.images,
-          description: data.description,
-          quantity: data.quantity,
+          id,
+          name: productData.name,
+          originalPrice: productData.originalPrice,
+          finalPrice: productData.finalPrice,
+          images: productData.images,
+          description: productData.description,
+          quantity: productData.quantity,
         });
       } else {
-        setProduct(null); // or fallback logic
+        setProduct(null);
       }
     }
+
     fetchProduct();
-  }, [id, source]);
+  }, [id]);
 
   if (!product) return <div>Loading...</div>;
 
