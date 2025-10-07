@@ -32,6 +32,13 @@ export default function Header() {
     firstName: string;
     lastName: string;
   } | null>(null);
+  const navigate = useNavigate();
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    // Navigate to products page with query param
+    navigate(`/products?q=${encodeURIComponent(val.trim())}`);
+  };
 
   const handleLogout = async () => {
     const auth = getAuth();
@@ -126,7 +133,7 @@ export default function Header() {
             <Input
               name="q"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={handleSearchInputChange}
               placeholder="Search for products, brands and more"
               className="pl-9"
             />

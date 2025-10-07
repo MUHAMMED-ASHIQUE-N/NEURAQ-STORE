@@ -1,210 +1,115 @@
-import { useEffect, useMemo, useState } from "react";
-import ProductCard from "../components/shop/ProductCard";
-import { Slider } from "../components/ui/slider";
-import { db, firestore } from "../firebase";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import { Checkbox } from "../components/ui/checkbox";
-import { products as productData } from "../data/products";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { initializeApp } from "firebase/app";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { firestore } from "../firebase";
+import ProductsList from "../components/shop/ProductCard";
 
-type Product = {
+interface Product {
   id: string;
+  title: string;
   name: string;
+  description: string;
   finalPrice: number;
   originalPrice?: number;
-  description?: string;
-  rating?: number; // 0-5
+  rating?: number;
   reviews?: number;
-  images?: [];
-  quantity: number;
-};
-const allProducts: Product[] = productData.map((p) => ({
-  id: p.id,
-  name: p.name,
-  price: p.finalPrice,
-  originalPrice: p.originalPrice,
-  image: p.images[0],
-}));
-
-const brands = ["Aurora", "Acme", "Nexus", "Zephyr"] as const;
-const categories = ["Amazon", "Local", "Software"] as const;
-
-import { useLocation } from "react-router-dom";
+  images?: string[];
+  quantity?: number;
+}
 
 export default function ProductsPage() {
-  const params = new URLSearchParams(useLocation().search);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
   const q = params.get("q")?.toLowerCase().trim() || "";
 
-  const [price, setPrice] = useState([0, 300]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [sort, setSort] = useState("popularity");
-
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
-    async function fetchAllProducts() {
+    async function fetchProducts(searchTerm: string) {
+      setLoading(true);
+      if (!searchTerm) {
+        // Load all products when no search term
+        const collections = [
+          "amazonProducts",
+          "localProducts",
+          "softwareProducts",
+        ];
+        let allProducts: Product[] = [];
+
+        for (const col of collections) {
+          const snap = await getDocs(collection(firestore, col));
+          allProducts = [
+            ...allProducts,
+            ...snap.docs.map((doc) => ({
+              id: doc.id,
+              ...(doc.data() as Omit<Product, "id">),
+            })),
+          ];
+        }
+
+        setProducts(allProducts);
+        setLoading(false);
+        return;
+      }
+
+      // Search products by title, name, description in collections
       const collections = [
         "amazonProducts",
         "localProducts",
         "softwareProducts",
       ];
-      let all: Product[] = [];
-      for (const col of collections) {
-        const snap = await getDocs(collection(db, col));
-        all = [
-          ...all,
-          ...(snap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })) as Product[]),
-        ];
+      const queries = collections.flatMap((col) => [
+        query(
+          collection(firestore, col),
+          where("title", ">=", searchTerm),
+          where("title", "<=", searchTerm + "\uf8ff")
+        ),
+        query(
+          collection(firestore, col),
+          where("name", ">=", searchTerm),
+          where("name", "<=", searchTerm + "\uf8ff")
+        ),
+        query(
+          collection(firestore, col),
+          where("description", ">=", searchTerm),
+          where("description", "<=", searchTerm + "\uf8ff")
+        ),
+      ]);
+
+      let allResults: Product[] = [];
+      for (const q of queries) {
+        const snap = await getDocs(q);
+        snap.forEach((doc) => {
+          const data = doc.data() as Omit<Product, "id">;
+          allResults.push({ id: doc.id, ...data });
+        });
       }
-      setProducts(all);
+
+      // Remove duplicates by id
+      const seen = new Set<string>();
+      const uniqueResults = allResults.filter((item) => {
+        if (seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+      });
+
+      setProducts(uniqueResults);
       setLoading(false);
     }
-    fetchAllProducts();
-  }, []);
-  const filtered = useMemo(() => {
-    let list = allProducts.filter(
-      (p) => p.price >= price[0] && p.price <= price[1]
-    );
-    if (q) list = list.filter((p) => p.name.toLowerCase().includes(q));
-    if (selectedBrands.length)
-      list = list.filter((p) => selectedBrands.includes(guessBrand(p.name)));
-    if (selectedCategories.length)
-      list = list.filter((p) =>
-        selectedCategories.some((c) => p.name.toLowerCase().includes(c))
-      );
 
-    switch (sort) {
-      case "price-asc":
-        list = list.slice().sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        list = list.slice().sort((a, b) => b.price - a.price);
-        break;
-      case "newest":
-        list = list.slice().reverse();
-        break;
-      default:
-        break;
-    }
-    return list;
-  }, [q, price, selectedBrands, selectedCategories, sort]);
+    fetchProducts(q);
+  }, [q]);
 
-  function toggle(arr: string[], value: string) {
-    return arr.includes(value)
-      ? arr.filter((v) => v !== value)
-      : [...arr, value];
-  }
-  if (loading) return <div>Loading...</div>;
   return (
     <div className="container py-8 md:py-10">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold md:text-2xl">
-          {q ? `Search results for “${q}”` : "All Products"}
-        </h1>
-        <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent align="end">
-            <SelectItem value="popularity">Popularity</SelectItem>
-            <SelectItem value="newest">Newest</SelectItem>
-            <SelectItem value="price-asc">Price: Low to High</SelectItem>
-            <SelectItem value="price-desc">Price: High to Low</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-cols-3 gap-20">
-        <aside className="space-y-6">
-          <div>
-            <h3 className="text-sm font-semibold">Price range</h3>
-            <div className="mt-4 w-40">
-              <Slider
-                value={price}
-                onValueChange={setPrice}
-                step={10}
-                min={0}
-                max={300}
-                className=""
-              />
-              <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                <span>${price[0]}</span>
-                <span>${price[1]}</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold">Brand</h3>
-            <div className="mt-3 space-y-3 text-sm">
-              {brands.map((b) => (
-                <label
-                  key={b}
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <Checkbox
-                    checked={selectedBrands.includes(b)}
-                    onCheckedChange={() =>
-                      setSelectedBrands((v) => toggle(v, b))
-                    }
-                  />
-                  <span>{b}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold">Category</h3>
-            <div className="mt-3 space-y-3 text-sm">
-              {categories.map((c) => (
-                <label
-                  key={c}
-                  className="flex cursor-pointer items-center gap-2 capitalize"
-                >
-                  <Checkbox
-                    checked={selectedCategories.includes(c)}
-                    onCheckedChange={() =>
-                      setSelectedCategories((v) => toggle(v, c))
-                    }
-                  />
-                  <span>{c}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        <section>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
+      {loading && <div>Loading...</div>}
+      {!loading && products.length === 0 && <div>No products found.</div>}
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {products.map((product) => (
+          <ProductsList key={product.id} product={product} />
+        ))}
       </div>
     </div>
   );
-}
-
-function guessBrand(name: string): string {
-  const h = name.toLowerCase();
-  if (h.includes("pro") || h.includes("smart") || h.includes("wireless"))
-    return "Nexus";
-  if (h.includes("chair") || h.includes("lamp") || h.includes("home"))
-    return "Zephyr";
-  if (h.includes("shirt") || h.includes("shoes") || h.includes("backpack"))
-    return "Aurora";
-  return "Acme";
 }
