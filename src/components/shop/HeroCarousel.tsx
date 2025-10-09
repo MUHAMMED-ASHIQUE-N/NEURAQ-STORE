@@ -13,7 +13,7 @@ const slides = [
     title: "New Season. New Style.",
     subtitle: "Discover premium fashion with up to 40% OFF",
     cta: "Shop Fashion",
-    href: "/products?category=fashion",
+    href: "/products?category=amazon",
     image:
       "https://images.unsplash.com/photo-1483181957632-8bda974cbc91?q=80&w=1600&auto=format&fit=crop",
   },
@@ -21,7 +21,7 @@ const slides = [
     title: "Top Tech Deals",
     subtitle: "Laptops, headphones & more starting $99",
     cta: "Shop Electronics",
-    href: "/products?category=electronics",
+    href: "/products?category=local",
     image:
       "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1600&auto=format&fit=crop",
   },
@@ -29,7 +29,7 @@ const slides = [
     title: "Home Essentials",
     subtitle: "Upgrade your space with cozy picks",
     cta: "Shop Home",
-    href: "/products?category=home",
+    href: "/products?category=software",
     image:
       "https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?q=80&w=1600&auto=format&fit=crop",
   },

@@ -44,21 +44,21 @@ function FeaturedSections() {
   const categories = [
     {
       title: "Amazon",
-      href: "/products?category=fashion",
+      href: "/products?category=amazon",
       image:
-        "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1649734926695-1b1664e98842?q=80&w=1200&auto=format&fit=crop",
     },
     {
       title: "Local",
-      href: "/products?category=electronics",
+      href: "/products?category=local",
       image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop",
+        "https://plus.unsplash.com/premium_photo-1681487985079-b299ac8ba1df?q=80&w=1200&auto=format&fit=crop",
     },
     {
       title: "Software",
-      href: "/products?category=home",
+      href: "/products?category=software",
       image:
-        "https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1200&auto=format&fit=crop",
+        "https://plus.unsplash.com/premium_photo-1720287601013-69bed792f481?q=80&w=1200&auto=format&fit=crop",
     },
   ];
 

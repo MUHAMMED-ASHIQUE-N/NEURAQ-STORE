@@ -1,29 +1,15 @@
-{
-  order.items.map((item) => {
-    const qty = Number(item.qty) || 0;
-    const price = Number(item.price) || 0;
-    const totalPrice = currency(price * qty);
-
-    const orderDate = order.createdAt?.toDate
-      ? order.createdAt.toDate()
-      : new Date(order.createdAt);
-    const dateString = orderDate.toLocaleDateString();
-
-    return (
-      <div key={item.id} className="flex items-center gap-3">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="h-14 w-14 rounded-md object-cover"
-        />
-        <div className="flex-1">
-          <div className="font-medium">{item.name}</div>
-          <div className="text-sm text-muted-foreground">Qty: {qty}</div>
-        </div>
-        <div className="text-right text-sm font-medium">{totalPrice}</div>
-      </div>
-    );
-  });
-}
-
-<div className="text-sm">{dateString}</div>;
+{Array.isArray(product.images) && product.images.length > 0 ? (
+          product.images.map((img, idx) => (
+            <Link to={`/product/${product.id}`} className="block">
+              <div className="aspect-square overflow-hidden bg-muted">
+                <img
+                  key={idx}
+                  src={productImage}
+                  alt={`${product.name} image ${idx + 1}`}
+                  className="w-full h-full object-cover rounded-lg flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+            </Link>
+          ))
+        ) : 

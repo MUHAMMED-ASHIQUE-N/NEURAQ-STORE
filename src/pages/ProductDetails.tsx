@@ -94,26 +94,34 @@ export default function ProductDetails() {
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Gallery */}
         <div>
-          <div className="aspect-square overflow-hidden rounded-xl border bg-muted">
-            <img
-              src={product.images[active]}
-              alt={product.name}
-              className="object-cover"
-            />
-          </div>
-          <div className="mt-4 flex space-x-4 overflow-x-auto">
-            {product.images.map((img, i) => (
-              <img
-                key={img}
-                src={img}
-                alt={`${product.name} ${i + 1}`}
-                className={`h-24 w-24 cursor-pointer rounded-md border object-cover ${
-                  active === i ? "border-primary" : "border-transparent"
-                }`}
-                onClick={() => setActive(i)}
-              />
-            ))}
-          </div>
+          {product.images && product.images.length > 0 ? (
+            <>
+              <div className="aspect-square overflow-hidden rounded-xl border bg-muted">
+                <img
+                  src={product.images[active]}
+                  alt={product.name}
+                  className="object-cover"
+                />
+              </div>
+              <div className="mt-4 flex space-x-4 overflow-x-auto">
+                {product.images.map((img, i) => (
+                  <img
+                    key={img}
+                    src={img}
+                    alt={`${product.name} ${i + 1}`}
+                    className={`h-24 w-24 cursor-pointer rounded-md border object-cover ${
+                      active === i ? "border-primary" : "border-transparent"
+                    }`}
+                    onClick={() => setActive(i)}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+              No Image Available
+            </div>
+          )}
         </div>
         {/* Info */}
         <div>

@@ -94,28 +94,19 @@ export default function ProductsList({ product }: { product: Product }) {
   return (
     <div className="group relative overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-lg ">
       <div className="flex space-x-2 overflow-x-auto mb-3">
-        {Array.isArray(product.images) && product.images.length > 0 ? (
-          product.images.map((img, idx) => (
-            <Link to={`/product/${product.id}`} className="block">
-              <div className="aspect-square overflow-hidden bg-muted">
-                <img
-                  key={idx}
-                  src={productImage}
-                  alt={`${product.name} image ${idx + 1}`}
-                  className="w-full h-full object-cover rounded-lg flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-            </Link>
-          ))
-        ) : product.images ? (
-          <img
-            src={productImage}
-            alt={product.name}
-            className="w-full h-full object-cover rounded-lg mb-3"
-          />
+        {product.images ? (
+          <Link to={`/product/${product.id}`} className="block">
+            <div className="aspect-square overflow-hidden bg-muted">
+              <img
+                src={productImage}
+                alt={product.name}
+                className="w-full h-full object-cover rounded-lg flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+          </Link>
         ) : (
-          <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+          <div className="w-full h-75 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
             No Image Available
           </div>
         )}

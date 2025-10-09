@@ -17,6 +17,12 @@ interface Product {
   quantity?: number;
 }
 
+const collectionMap: Record<string, string> = {
+  amazon: "amazonProducts",
+  local: "localProducts",
+  software: "softwareProducts",
+};
+
 export default function ProductsPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -24,19 +30,100 @@ export default function ProductsPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const category = params.get("category");
 
   useEffect(() => {
-    async function fetchProducts(searchTerm: string) {
+    async function fetchProducts() {
       setLoading(true);
-      if (!searchTerm) {
-        // Load all products when no search term
-        const collections = [
-          "amazonProducts",
-          "localProducts",
-          "softwareProducts",
-        ];
+      let results: Product[] = [];
+      // Filter by category
+      const chosenCollection = category && collectionMap[category];
+      if (chosenCollection) {
+        if (q) {
+          // Search filtering in chosen category
+          const queries = [
+            query(
+              collection(firestore, chosenCollection),
+              where("title", ">=", q),
+              where("title", "<=", q + "\uf8ff")
+            ),
+            query(
+              collection(firestore, chosenCollection),
+              where("name", ">=", q),
+              where("name", "<=", q + "\uf8ff")
+            ),
+            query(
+              collection(firestore, chosenCollection),
+              where("description", ">=", q),
+              where("description", "<=", q + "\uf8ff")
+            ),
+          ];
+          let allResults: Product[] = [];
+          for (const qy of queries) {
+            const snap = await getDocs(qy);
+            snap.forEach((doc) =>
+              allResults.push({
+                id: doc.id,
+                ...(doc.data() as Omit<Product, "id">),
+              })
+            );
+          }
+          // Deduplicate by id
+          const seen = new Set();
+          results = allResults.filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+        } else {
+          // Load all from chosen category
+          const snap = await getDocs(collection(firestore, chosenCollection));
+          results = snap.docs.map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as Omit<Product, "id">),
+          }));
+        }
+      } else if (q) {
+        // Search filtering across all collections
+        const collections = Object.values(collectionMap);
+        const queries = collections.flatMap((col) => [
+          query(
+            collection(firestore, col),
+            where("title", ">=", q),
+            where("title", "<=", q + "\uf8ff")
+          ),
+          query(
+            collection(firestore, col),
+            where("name", ">=", q),
+            where("name", "<=", q + "\uf8ff")
+          ),
+          query(
+            collection(firestore, col),
+            where("description", ">=", q),
+            where("description", "<=", q + "\uf8ff")
+          ),
+        ]);
+        let allResults: Product[] = [];
+        for (const qy of queries) {
+          const snap = await getDocs(qy);
+          snap.forEach((doc) =>
+            allResults.push({
+              id: doc.id,
+              ...(doc.data() as Omit<Product, "id">),
+            })
+          );
+        }
+        // Deduplicate by id
+        const seen = new Set();
+        results = allResults.filter((item) => {
+          if (seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        });
+      } else {
+        // Load all products from all collections
+        const collections = Object.values(collectionMap);
         let allProducts: Product[] = [];
-
         for (const col of collections) {
           const snap = await getDocs(collection(firestore, col));
           allProducts = [
@@ -47,59 +134,14 @@ export default function ProductsPage() {
             })),
           ];
         }
-
-        setProducts(allProducts);
-        setLoading(false);
-        return;
+        results = allProducts;
       }
 
-      // Search products by title, name, description in collections
-      const collections = [
-        "amazonProducts",
-        "localProducts",
-        "softwareProducts",
-      ];
-      const queries = collections.flatMap((col) => [
-        query(
-          collection(firestore, col),
-          where("title", ">=", searchTerm),
-          where("title", "<=", searchTerm + "\uf8ff")
-        ),
-        query(
-          collection(firestore, col),
-          where("name", ">=", searchTerm),
-          where("name", "<=", searchTerm + "\uf8ff")
-        ),
-        query(
-          collection(firestore, col),
-          where("description", ">=", searchTerm),
-          where("description", "<=", searchTerm + "\uf8ff")
-        ),
-      ]);
-
-      let allResults: Product[] = [];
-      for (const q of queries) {
-        const snap = await getDocs(q);
-        snap.forEach((doc) => {
-          const data = doc.data() as Omit<Product, "id">;
-          allResults.push({ id: doc.id, ...data });
-        });
-      }
-
-      // Remove duplicates by id
-      const seen = new Set<string>();
-      const uniqueResults = allResults.filter((item) => {
-        if (seen.has(item.id)) return false;
-        seen.add(item.id);
-        return true;
-      });
-
-      setProducts(uniqueResults);
+      setProducts(results);
       setLoading(false);
     }
-
-    fetchProducts(q);
-  }, [q]);
+    fetchProducts();
+  }, [q, category]);
 
   return (
     <div className="container py-8 md:py-10">
